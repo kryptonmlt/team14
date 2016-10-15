@@ -45,6 +45,7 @@
 
                     game.load.tilemap('map', 'assets/example1.csv', null, Phaser.Tilemap.CSV);
                     game.load.image('tiles', 'assets/example1.jpg');
+                    game.load.spritesheet('kaboom', 'assets/explosion.png', 64, 64, 23);
 
                 }
 
@@ -92,7 +93,13 @@
                     bullets2.setAll('anchor.x', 0.5);
                     bullets2.setAll('anchor.y', 0.5);
 
-                    //createInvisibleWalls();
+                    //explosion
+                    explosions = game.add.group();
+                    for (var i = 0; i < 10; i++) {
+                        var explosionAnimation = explosions.create(0, 0, 'kaboom', [0], false);
+                        explosionAnimation.anchor.setTo(0.5, 0.5);
+                        explosionAnimation.animations.add('kaboom');
+                    }
 
                     cursors = game.input.keyboard.createCursorKeys();
                     game.input.onDown.add(gofull, this);
@@ -120,8 +127,12 @@
                     //players collided with each other
                 }
 
-                function hitPlayerWithBullet(player1, bullet) {
+                function hitPlayerWithBullet(player, bullet) {
                     bullet.kill();
+
+                    var explosionAnimation = explosions.getFirstExists(false);
+                    explosionAnimation.reset(player.x, player.y);
+                    explosionAnimation.play('kaboom', 30, false, true);
                 }
 
                 function createPlayer(player) {
@@ -130,19 +141,6 @@
                     player.body.maxAngular = 500;
                     player.body.angularDrag = 50;
                     player.body.collideWorldBounds = true;
-                }
-
-                function createInvisibleWalls() {
-                    wallLeft = game.add.tileSprite((8 * 4), 0, 8, game.height, 'blank');
-                    wallRight = game.add.tileSprite(game.width - (8 * 4), 0, 8, game.height, 'blank');
-
-                    game.physics.enable([wallLeft, wallRight], Phaser.Physics.ARCADE);
-
-                    wallLeft.body.immovable = true;
-                    wallLeft.body.allowGravity = false;
-
-                    wallRight.body.immovable = true;
-                    wallRight.body.allowGravity = false;
                 }
 
                 function update() {
