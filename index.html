@@ -3,38 +3,66 @@
     <head>
         <meta charset="UTF-8" />
         <title>Draw Battle</title>
-        <script src="//cdn.jsdelivr.net/phaser/2.5.0/phaser.min.js"></script>
+        <script src="js/phaser.min.js"></script>
         <script src="js/jquery-3.1.1.min.js"></script>
     </head>
     <body>
 
         <script type="text/javascript">
             $(document).ready(function () {
-                var game = new Phaser.Game(800, 600, Phaser.AUTO, 'phaserGame', {preload: preload, create: create, update: update});
-                game.physics.startSystem(Phaser.Physics.ARCADE);
+                var game = new Phaser.Game(1024, 768, Phaser.AUTO, 'game', {preload: preload, create: create, update: update, render: render});
 
                 var player1X = 50;
                 var player1Y = 100;
-                var player2X = game.width - 200;
-                var player2Y = 100;
                 var flag1X = 50;
                 var flag1Y = 200;
-                var flag2X = game.width - 200;
+
+                var player2X = 500;
+                var player2Y = 100;
+                var flag2X = 500;
                 var flag2Y = 200;
 
+                var tileSize = 16;
+                var mapX = 1024;
+                var mapY = 768;
+                var flagTileX = 16;
+                var flagTileY = 16;
+
+                var flagId = 1;
+
                 function preload() {
-                    game.load.spritesheet('flag1', 'assets/flag1.png', 158, 316);
-                    game.load.spritesheet('flag2', 'assets/flag2.png', 158, 316);
+                    game.load.spritesheet('flag1', 'assets/flag1.png', flagTileX, flagTileY);
+                    game.load.spritesheet('flag2', 'assets/flag2.png', flagTileX, flagTileY);
                     game.load.image('tank1', 'assets/tank1.png');
                     game.load.image('tank2', 'assets/tank2.png');
                     game.load.image('bullet1', 'assets/bullet1.png');
                     game.load.image('bullet2', 'assets/bullet2.png');
-                    
+
                     game.load.tilemap('map', 'assets/example1.csv', null, Phaser.Tilemap.CSV);
+                    game.load.image('tiles', 'assets/example1.jpg');
 
                 }
 
                 function create() {
+
+                    game.physics.startSystem(Phaser.Physics.ARCADE);
+                    game.scale.fullScreenScaleMode = Phaser.ScaleManager.EXACT_FIT;
+
+                    //tilemap
+                    map = game.add.tilemap('map', 16, 16);
+                    map.addTilesetImage('tiles');
+                    //  Create our layer
+                    layer = map.createLayer(0);
+                    layer.resizeWorld();
+
+                    //map.addTilesetImage('flag1');
+                    //map.addTilesetImage('flag2');
+                    //map.setTileIndexCallback(flagId, hitFlag, this);
+                    //This will set the map location 2, 0 to call the function
+                    //map.setTileLocationCallback(2, 0, 1, 1, hitCoin, this);
+                    //input
+
+
                     //flags
                     flags = game.add.group();
                     flag1 = flags.create(flag1X, flag1Y, 'flag1', 0);
@@ -46,15 +74,58 @@
 
                     //players
                     players = game.add.group();
-                    player1 = players.create(player1X, player1Y, 'tank1');
-                    player2 = players.create(player2X, player2Y, 'tank2');
+                    player1 = game.add.sprite(player1X, player1Y, 'tank1', players);
+                    player2 = game.add.sprite(player2X, player2Y, 'tank2', players);
                     players.scale.set(0.25, 0.25);
+                    createPlayer(player1);
+                    createPlayer(player2);
 
-                    //tilemap
-                    
+                    cursors = game.input.keyboard.createCursorKeys();
+
+                }
+
+                function hitFlag(player, tile) {
+                    //tile.alpha = 0.2;
+                    //layer.dirty = true;
+                    //return false;
+                }
+
+                function createPlayer(player) {
+                    player.anchor.set(0.5);
+                    game.physics.enable(player);
+                    player.body.maxAngular = 500;
+                    player.body.angularDrag = 50;
                 }
 
                 function update() {
+
+                    game.physics.arcade.collide(player1, layer);
+
+                    player1.body.velocity.x = 0;
+                    player1.body.velocity.y = 0;
+                    player1.body.angularVelocity = 0;
+
+                    if (cursors.left.isDown)
+                    {
+                        player1.body.angularVelocity = -200;
+                    } else if (cursors.right.isDown)
+                    {
+                        player1.body.angularVelocity = 200;
+                    }
+
+                    if (cursors.up.isDown)
+                    {
+                        game.physics.arcade.velocityFromAngle(player1.angle, 200, player1.body.velocity);
+                    }
+
+                }
+
+                function render() {
+
+                    //game.debug.body(player1);
+                    //game.debug.body(player2);
+                    //game.debug.body(flag1);
+                    //game.debug.body(flag2);
 
                 }
             });
