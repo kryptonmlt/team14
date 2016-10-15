@@ -80,13 +80,17 @@
                     game.load.image('bullet2', 'assets/bullet2.png');
 
                     game.load.tilemap('map', 'assets/example1.csv', null, Phaser.Tilemap.CSV);
-                    //game.load.image('tiles', 'assets/example1.jpg');
-                    game.load.image('tiles', pictureUrl);
+                    game.load.image('tiles', 'assets/example1.jpg');
+                    //game.load.image('tiles', pictureUrl);
                     game.load.spritesheet('kaboom', 'assets/explosion.png', 64, 64, 23);
                     game.load.image('button', 'assets/start.png');
                     game.load.image('cover', 'assets/cover.png');
                     game.load.image('rematchButton', 'assets/rematch.png');
                     game.load.bitmapFont('desyrel', 'assets/desyrel.png', 'assets/desyrel.xml');
+                    game.load.audio('music', ['assets/gameMusic.mp3', 'assets/gameMusic.ogg']);
+                    game.load.audio('shoot', ['assets/shoot.mp3', 'assets/shoot.ogg']);
+                    game.load.audio('explosion', ['assets/explosion.mp3', 'assets/explosion.ogg']);
+                    game.load.audio('victory', ['assets/victory.mp3', 'assets/victory.ogg']);
                 }
 
                 function create() {
@@ -147,6 +151,22 @@
                     cover = game.add.sprite(0, 0, 'cover');
                     button = game.add.button(game.world.centerX - 95, 400, 'button', startOnClick, this, 2, 1, 0);
 
+                    //sounds
+                    music = game.add.audio('music');
+                    music.volume = 0.2;
+                    music.play();
+                    music.onStop.add(musicStopped, this);
+                    explosionSound = game.add.audio('explosion');
+                    explosionSound.volume = 1;
+                    shoot1Sound = game.add.audio('shoot');
+                    shoot1Sound.volume = 1;
+                    shoot2Sound = game.add.audio('shoot');
+                    shoot2Sound.volume = 1;
+                    victorySound = game.add.audio('victory');
+                    victorySound.volume = 1;
+                }
+                function musicStopped(sound) {
+                    sound.restart();
                 }
 
                 function startOnClick() {
@@ -180,7 +200,7 @@
                 function hitPlayerWithBullet(player, bullet) {
                     bullet.kill();
                     player.health = player.health - BULLET_DAMAGE;
-
+                    explosionSound.play();
                     if (player.health <= 0) {// player died
                         var explosionAnimation = explosions.getFirstExists(false);
                         explosionAnimation.reset(player.x, player.y);
@@ -189,12 +209,14 @@
                         endScreen(player.deathMessage);
                     }
                 }
+
                 function rematchLink() {
                     window.location.href = "/team14/";
                 }
 
                 function endScreen(message) {
                     isStarted = false;
+                    victorySound.play();
                     bmpText = game.add.bitmapText(200, 100, 'desyrel', message, 64);
                     game.add.button(game.world.centerX - 95, 400, 'rematchButton', rematchLink, this, 2, 1, 0);
                 }
@@ -289,6 +311,7 @@
                             bullet1.rotation = player1.rotation;
                             game.physics.arcade.velocityFromRotation(player1.rotation, bulletPixelPerSecond, bullet1.body.velocity);
                             bulletTime1 = game.time.now + bulletDelay;
+                            shoot1Sound.play();
                         }
                     }
                 }
@@ -305,6 +328,7 @@
                             bullet2.rotation = player2.rotation;
                             game.physics.arcade.velocityFromRotation(player2.rotation, bulletPixelPerSecond, bullet2.body.velocity);
                             bulletTime2 = game.time.now + bulletDelay;
+                            shoot2Sound.play();
                         }
                     }
                 }
