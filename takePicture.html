@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta content="stuff, to, help, search, engines, not" name="keywords">
+        <meta content="What this page is about." name="description">
+        <title>Upload Picture</title>
+
+        <style>
+        </style>
+
+        <script src="js/jquery-3.1.1.min.js"></script>
+        <script>
+            $(document).ready(function () {
+                var myInput = document.getElementById('myFileInput');
+
+                function sendPic() {
+                    var file = myInput.files[0];
+                    var form_data = new FormData(file);
+                    $.ajax({
+                        type: 'POST',
+                        url: 'http://localhost:5000/upload',
+                        data: form_data,
+                        contentType: false,
+                        cache: false,
+                        processData: false,
+                        async: false,
+                        success: function (data) {
+                            console.log(data);
+                            var p1 = "";
+                            var p2 = "";
+                            var objs = "";
+                            var pictureUrl = "";
+                            window.location.href = 'game.html?player1=' + p1 + "&player2=" + p2 + "&objs=" + objs + "&pictureUrl=" + pictureUrl;
+                        },
+                    });
+                }
+
+                myInput.addEventListener('change', sendPic, false);
+            });
+
+        </script>
+    </head>
+
+    <body>
+        <div id="container">
+
+            <input id="myFileInput" type="file" accept="image/*;capture=camera">
+        </div>
+
+    </body>
+</html>
