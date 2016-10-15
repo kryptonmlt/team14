@@ -56,8 +56,8 @@
                 var tileSize = 16;
                 var mapX = 1024;
                 var mapY = 768;
-                var flagTileX = tileSize;
-                var flagTileY = tileSize;
+                var flagTileX = 32;
+                var flagTileY = 64;
 
                 var bullets1;
                 var bullets2;
@@ -115,13 +115,6 @@
                     flags.callAll('animations.add', 'animations', 'windy', [0, 1, 2, 3, 4, 5, 6, 7, 8, 7, 6, 5, 4, 3, 2, 1], 4, true);
                     flags.callAll('animations.play', 'animations', 'windy');
 
-                    //players
-                    players = game.add.group();
-                    player1 = game.add.sprite(player1X, player1Y, 'tank1', players);
-                    player2 = game.add.sprite(player2X, player2Y, 'tank2', players);
-                    createPlayer(player1, "Player 2 Won!", "Player 1 Won!");
-                    createPlayer(player2, "Player 1 Won!", "Player 2 Won!");
-
                     //bullets
                     bullets1 = game.add.group();
                     bullets1.enableBody = true;
@@ -137,6 +130,13 @@
                     bullets2.setAll('anchor.x', 0.5);
                     bullets2.setAll('anchor.y', 0.5);
 
+                    //players
+                    players = game.add.group();
+                    player1 = game.add.sprite(player1X, player1Y, 'tank1', players);
+                    player2 = game.add.sprite(player2X, player2Y, 'tank2', players);
+                    createPlayer(player1, "Player 2 Won!", "Player 1 Won!");
+                    createPlayer(player2, "Player 1 Won!", "Player 2 Won!");
+                    
                     //explosion
                     explosions = game.add.group();
                     for (var i = 0; i < 10; i++) {
@@ -217,7 +217,7 @@
                 function endScreen(message) {
                     isStarted = false;
                     victorySound.play();
-                    bmpText = game.add.bitmapText(200, 100, 'desyrel', message, 64);
+                    bmpText = game.add.bitmapText(200, 100, 'desyrel', message, 125);
                     game.add.button(game.world.centerX - 95, 400, 'rematchButton', rematchLink, this, 2, 1, 0);
                 }
 
