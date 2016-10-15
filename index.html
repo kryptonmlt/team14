@@ -7,7 +7,6 @@
         <script src="js/jquery-3.1.1.min.js"></script>
     </head>
     <body>
-
         <script type="text/javascript">
             $(document).ready(function () {
 
@@ -19,6 +18,8 @@
 
                 var objects;
 
+                var MAX_PLAYER_HEALTH = 1;
+                var BULLET_DAMAGE = 1;
                 var tileSize = 16;
                 var mapX = 1024;
                 var mapY = 768;
@@ -50,6 +51,8 @@
                     game.load.spritesheet('kaboom', 'assets/explosion.png', 64, 64, 23);
                     game.load.image('button', 'assets/start.png');
                     game.load.image('cover', 'assets/cover.png');
+                    game.load.image('rematchButton', 'assets/rematch.png');
+                    game.load.bitmapFont('desyrel', 'assets/desyrel.png', 'assets/desyrel.xml');
                 }
 
                 function create() {
@@ -78,8 +81,8 @@
                     players = game.add.group();
                     player1 = game.add.sprite(player1X, player1Y, 'tank1', players);
                     player2 = game.add.sprite(player2X, player2Y, 'tank2', players);
-                    createPlayer(player1);
-                    createPlayer(player2);
+                    createPlayer(player1, "Player 2 Won!", "Player 1 Won!");
+                    createPlayer(player2, "Player 1 Won!", "Player 2 Won!");
 
                     //bullets
                     bullets1 = game.add.group();
@@ -128,31 +131,59 @@
                     {
                         game.scale.startFullScreen(false);
                     }
-
                 }
 
                 function hitFlag(player, flag) {
                     flag.kill();
+                    endScreen(player.flagMessage);
                 }
 
                 function hitPlayer(player1, player2) {
                     //players collided with each other
+                    //do nothing
                 }
 
                 function hitPlayerWithBullet(player, bullet) {
                     bullet.kill();
+                    player.health = player.health - BULLET_DAMAGE;
 
-                    var explosionAnimation = explosions.getFirstExists(false);
-                    explosionAnimation.reset(player.x, player.y);
-                    explosionAnimation.play('kaboom', 30, false, true);
+                    if (player.health <= 0) {// player died
+                        var explosionAnimation = explosions.getFirstExists(false);
+                        explosionAnimation.reset(player.x, player.y);
+                        explosionAnimation.play('kaboom', 30, false, true);
+                        player.kill();
+                        endScreen(player.deathMessage);
+                    }
+                }
+                function rematchLink() {
+                    window.location.href = "/team14/";
                 }
 
-                function createPlayer(player) {
+                function endScreen(message) {
+                    isStarted = false;
+                    bmpText = game.add.bitmapText(200, 100, 'desyrel', message, 64);
+                    game.add.button(game.world.centerX - 95, 400, 'rematchButton', rematchLink, this, 2, 1, 0);
+                }
+
+                function createPlayer(player, deathMessage, flagMessage) {
                     player.anchor.set(0.5);
                     game.physics.enable(player);
                     player.body.maxAngular = 500;
                     player.body.angularDrag = 50;
                     player.body.collideWorldBounds = true;
+                    player.health = MAX_PLAYER_HEALTH;
+                    player.deathMessage = deathMessage;
+                    player.flagMessage = flagMessage;
+                }
+
+                function resetVelocity() {
+                    player1.body.velocity.x = 0;
+                    player1.body.velocity.y = 0;
+                    player1.body.angularVelocity = 0;
+
+                    player2.body.velocity.x = 0;
+                    player2.body.velocity.y = 0;
+                    player2.body.angularVelocity = 0;
                 }
 
                 function update() {
@@ -165,13 +196,7 @@
                         game.physics.arcade.collide(player1, flag2, hitFlag, null, this);
                         game.physics.arcade.collide(player2, flag1, hitFlag, null, this);
 
-                        player1.body.velocity.x = 0;
-                        player1.body.velocity.y = 0;
-                        player1.body.angularVelocity = 0;
-
-                        player2.body.velocity.x = 0;
-                        player2.body.velocity.y = 0;
-                        player2.body.angularVelocity = 0;
+                        resetVelocity();
 
                         //Player 1
                         if (cursors.left.isDown)
@@ -213,6 +238,8 @@
                         {
                             gofull();
                         }
+                    } else {
+                        resetVelocity();
                     }
                 }
 
@@ -259,5 +286,7 @@
             });
         </script>
 
+        <div id="game">
+        </div>
     </body>
 </html>
