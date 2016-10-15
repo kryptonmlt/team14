@@ -1,0 +1,21 @@
+<input type="image" onchange="previewimage()"><br>
+<img src="" height="200" alt="Image preview...">
+<script>
+   function previewimage(){
+       var preview = document.querySelector('img'); 
+       var image    = document.querySelector('input[type=image]').images[0]; 
+       var reader  = new imageReader();
+
+       reader.onloadend = function () {
+           preview.src = reader.result;
+       }
+
+       if (image) {
+           reader.readAsDataURL(image); 
+       } else {
+           preview.src = "";
+       }
+  }
+
+  previewimage(); 
+  </script>
