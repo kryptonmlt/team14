@@ -52,9 +52,12 @@
                 function uploadPicture() {
                     $.post(uploadURL,
                             {
-                                img: canvas.toDataURL('image/jpeg')
+                                file: canvas.toDataURL('image/jpeg')
                             },
-                            function (data) {});
+                            function (data) {
+                                // we need to call game page!!
+                                console.log("reply: " + data);
+                            });
                 }
 
                 var takePicButton = document.getElementById('takeButton');
