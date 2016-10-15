@@ -86,7 +86,7 @@
                     player2 = game.add.sprite(player2X, player2Y, 'tank2', players);
                     createPlayer(player1);
                     createPlayer(player2);
-
+                    
                     //bullets
                     bullets1 = game.add.group();
                     bullets1.enableBody = true;
@@ -101,6 +101,8 @@
                     bullets2.createMultiple(40, 'bullet2');
                     bullets2.setAll('anchor.x', 0.5);
                     bullets2.setAll('anchor.y', 0.5);
+
+                    //createInvisibleWalls();
 
                     cursors = game.input.keyboard.createCursorKeys();
                     game.input.onDown.add(gofull, this);
@@ -126,17 +128,46 @@
                     //return false;
                 }
 
+                function hitPlayer(player1, player2) {
+                    //players collided with each other
+                }
+
+                function hitPlayer1WithBullet(player1, bullet) {
+                    bullet.kill();
+                }
+
+                function hitPlayer2WithBullet(player2, bullet) {
+                    bullet.kill();
+                }
+
                 function createPlayer(player) {
                     player.anchor.set(0.5);
                     game.physics.enable(player);
                     player.body.maxAngular = 500;
                     player.body.angularDrag = 50;
+                    player.body.collideWorldBounds = true;
+                }
+
+                function createInvisibleWalls() {
+                    wallLeft = game.add.tileSprite((8 * 4), 0, 8, game.height, 'blank');
+                    wallRight = game.add.tileSprite(game.width - (8 * 4), 0, 8, game.height, 'blank');
+
+                    game.physics.enable([wallLeft, wallRight], Phaser.Physics.ARCADE);
+
+                    wallLeft.body.immovable = true;
+                    wallLeft.body.allowGravity = false;
+
+                    wallRight.body.immovable = true;
+                    wallRight.body.allowGravity = false;
                 }
 
                 function update() {
 
                     game.physics.arcade.collide(player1, layer);
                     game.physics.arcade.collide(player2, layer);
+                    game.physics.arcade.collide(player1, player2, hitPlayer, null, this);
+                    game.physics.arcade.collide(player1, bullets2, hitPlayer1WithBullet, null, this);
+                    game.physics.arcade.collide(player2, bullets1, hitPlayer2WithBullet, null, this);
 
                     player1.body.velocity.x = 0;
                     player1.body.velocity.y = 0;
@@ -181,8 +212,6 @@
                     {
                         fireBulletPlayer2();
                     }
-
-
                 }
 
                 function fireBulletPlayer1() {
@@ -200,6 +229,7 @@
                         }
                     }
                 }
+
                 function fireBulletPlayer2() {
 
                     if (game.time.now > bulletTime2)
