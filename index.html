@@ -11,6 +11,7 @@
         <script type="text/javascript">
             $(document).ready(function () {
                 var game = new Phaser.Game(800, 600, Phaser.AUTO, 'phaserGame', {preload: preload, create: create, update: update});
+                game.physics.startSystem(Phaser.Physics.ARCADE);
 
                 var player1X = 50;
                 var player1Y = 100;
@@ -28,6 +29,8 @@
                     game.load.image('tank2', 'assets/tank2.png');
                     game.load.image('bullet1', 'assets/bullet1.png');
                     game.load.image('bullet2', 'assets/bullet2.png');
+                    
+                    game.load.tilemap('map', 'assets/example1.csv', null, Phaser.Tilemap.CSV);
 
                 }
 
