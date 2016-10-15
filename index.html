@@ -10,7 +10,6 @@
 
         <script type="text/javascript">
             $(document).ready(function () {
-                var game = new Phaser.Game(1024, 768, Phaser.AUTO, 'game', {preload: preload, create: create, update: update, render: render});
 
                 var player1X = 50;
                 var player1Y = 100;
@@ -25,10 +24,20 @@
                 var tileSize = 16;
                 var mapX = 1024;
                 var mapY = 768;
-                var flagTileX = 16;
-                var flagTileY = 16;
+                var flagTileX = tileSize;
+                var flagTileY = tileSize;
 
                 var flagId = 1;
+
+                var bullets1;
+                var bullets2;
+                var bulletTime1 = 0;
+                var bulletTime2 = 0;
+                var bulletPixelPerSecond = 400;
+                var bulletDelay = 500;
+                var bulletLifeSpan = 700;
+
+                var game = new Phaser.Game(mapX, mapY, Phaser.AUTO, 'game', {preload: preload, create: create, update: update, render: render});
 
                 function preload() {
                     game.load.spritesheet('flag1', 'assets/flag1.png', flagTileX, flagTileY);
@@ -70,17 +79,44 @@
 
                     flags.callAll('animations.add', 'animations', 'windy', [0, 1, 2, 3, 4, 5, 6, 7, 8, 7, 6, 5, 4, 3, 2, 1], 4, true);
                     flags.callAll('animations.play', 'animations', 'windy');
-                    flags.scale.set(0.5, 0.5);
 
                     //players
                     players = game.add.group();
                     player1 = game.add.sprite(player1X, player1Y, 'tank1', players);
                     player2 = game.add.sprite(player2X, player2Y, 'tank2', players);
-                    players.scale.set(0.25, 0.25);
                     createPlayer(player1);
                     createPlayer(player2);
 
+                    //bullets
+                    bullets1 = game.add.group();
+                    bullets1.enableBody = true;
+                    bullets1.physicsBodyType = Phaser.Physics.ARCADE;
+                    bullets1.createMultiple(40, 'bullet1');
+                    bullets1.setAll('anchor.x', 0.5);
+                    bullets1.setAll('anchor.y', 0.5);
+
+                    bullets2 = game.add.group();
+                    bullets2.enableBody = true;
+                    bullets2.physicsBodyType = Phaser.Physics.ARCADE;
+                    bullets2.createMultiple(40, 'bullet2');
+                    bullets2.setAll('anchor.x', 0.5);
+                    bullets2.setAll('anchor.y', 0.5);
+
                     cursors = game.input.keyboard.createCursorKeys();
+                    game.input.onDown.add(gofull, this);
+                    game.input.keyboard.addKeyCapture([Phaser.Keyboard.SPACEBAR]);
+
+                }
+
+                function gofull() {
+
+                    if (game.scale.isFullScreen)
+                    {
+                        game.scale.stopFullScreen();
+                    } else
+                    {
+                        game.scale.startFullScreen(false);
+                    }
 
                 }
 
@@ -100,11 +136,17 @@
                 function update() {
 
                     game.physics.arcade.collide(player1, layer);
+                    game.physics.arcade.collide(player2, layer);
 
                     player1.body.velocity.x = 0;
                     player1.body.velocity.y = 0;
                     player1.body.angularVelocity = 0;
 
+                    player2.body.velocity.x = 0;
+                    player2.body.velocity.y = 0;
+                    player2.body.angularVelocity = 0;
+
+                    //Player 1
                     if (cursors.left.isDown)
                     {
                         player1.body.angularVelocity = -200;
@@ -118,6 +160,60 @@
                         game.physics.arcade.velocityFromAngle(player1.angle, 200, player1.body.velocity);
                     }
 
+                    if (game.input.keyboard.isDown(Phaser.Keyboard.M))
+                    {
+                        fireBulletPlayer1();
+                    }
+
+                    //Player 2
+                    if (game.input.keyboard.isDown(Phaser.Keyboard.A))
+                    {
+                        player2.body.angularVelocity = -200;
+                    } else if (game.input.keyboard.isDown(Phaser.Keyboard.D))
+                    {
+                        player2.body.angularVelocity = 200;
+                    }
+                    if (game.input.keyboard.isDown(Phaser.Keyboard.W)) {
+                        game.physics.arcade.velocityFromAngle(player2.angle, 200, player2.body.velocity);
+                    }
+
+                    if (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR))
+                    {
+                        fireBulletPlayer2();
+                    }
+
+
+                }
+
+                function fireBulletPlayer1() {
+
+                    if (game.time.now > bulletTime1)
+                    {
+                        bullet1 = bullets1.getFirstExists(false);
+                        if (bullet1)
+                        {
+                            bullet1.reset(player1.body.x, player1.body.y);
+                            bullet1.lifespan = bulletLifeSpan;
+                            bullet1.rotation = player1.rotation;
+                            game.physics.arcade.velocityFromRotation(player1.rotation, bulletPixelPerSecond, bullet1.body.velocity);
+                            bulletTime1 = game.time.now + bulletDelay;
+                        }
+                    }
+                }
+                function fireBulletPlayer2() {
+
+                    if (game.time.now > bulletTime2)
+                    {
+                        bullet2 = bullets2.getFirstExists(false);
+                        if (bullet2)
+                        {
+                            bullet2.reset(player2.body.x, player2.body.y);
+                            bullet2.lifespan = bulletLifeSpan;
+                            bullet2.rotation = player2.rotation;
+                            game.physics.arcade.velocityFromRotation(player2.rotation, bulletPixelPerSecond, bullet2.body.velocity);
+                            bulletTime2 = game.time.now + bulletDelay;
+                        }
+                    }
                 }
 
                 function render() {
