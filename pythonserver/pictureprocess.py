@@ -22,9 +22,9 @@ def create_world():
 
     ## load the player
     player = np.zeros((64,64,3))
-    player = cv2.circle(player, (32,32), 30, (1,1,1), 3)
-    player = cv2.line(player, (0,0), (64,64), (1,1,1), 3)
-    player = cv2.line(player, (0,64), (64,0), (1,1,1), 3)
+    cv2.circle(player, (32,32), 30, (1,1,1), 3)
+    cv2.line(player, (0,0), (64,64), (1,1,1), 3)
+    cv2.line(player, (0,64), (64,0), (1,1,1), 3)
 
     ## match
     player_255_uint8 = player.astype(np.uint8)*255
@@ -32,7 +32,7 @@ def create_world():
     FLANN_INDEX_KDTREE = 0
     MIN_MATCH_COUNT = 5
 
-    sift = cv2.xfeatures2d.SIFT_create()
+    sift = cv2.SIFT()
     kp1, des1 = sift.detectAndCompute(player_255_uint8,None)
     kp2, des2 = sift.detectAndCompute(img1,None)
 
@@ -60,7 +60,7 @@ def create_world():
     player1, player2 = sorted(zip(v,k), reverse=True)[:2]
 
 
-    ## make 
+    ## make
 
 
 
