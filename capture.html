@@ -56,10 +56,27 @@
                             },
                             function (data) {});
                 }
+
                 var takePicButton = document.getElementById('takeButton');
                 var uploadPicButton = document.getElementById('uploadButton');
                 takePicButton.addEventListener("click", takePicture);
                 uploadPicButton.addEventListener("click", uploadPicture);
+
+                var imageLoader = document.getElementById('imageLoader');
+                imageLoader.addEventListener('change', handleImage, false);
+                function handleImage(e) {
+                    var reader = new FileReader();
+                    reader.onload = function (event) {
+                        var img = new Image();
+                        img.onload = function () {
+                            canvas.width = img.width;
+                            canvas.height = img.height;
+                            ctx.drawImage(img, 0, 0);
+                        }
+                        img.src = event.target.result;
+                    }
+                    reader.readAsDataURL(e.target.files[0]);
+                }
             });
         </script>
     </head>
@@ -69,8 +86,14 @@
             <video autoplay="true" id="videoElement">
 
             </video>
+            <div>
+                <button id="takeButton">Take Picture</button>
+                <input type="file" id="imageLoader" multiple="multiple" accept="image/*" />
+            </div>
+            <div>
+                <button id="uploadButton">Upload Picture</button>
+            </div>
         </div>
-        <button id="takeButton">Take Picture</button>
-        <button id="uploadButton">Upload Picture</button>
+
     </body>
 </html>
