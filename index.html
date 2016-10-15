@@ -17,13 +17,13 @@
                 var player2X = 500;
                 var player2Y = 100;
 
+                var objects;
+
                 var tileSize = 16;
                 var mapX = 1024;
                 var mapY = 768;
                 var flagTileX = tileSize;
                 var flagTileY = tileSize;
-
-                var flagId = 1;
 
                 var bullets1;
                 var bullets2;
@@ -56,17 +56,9 @@
                     //tilemap
                     map = game.add.tilemap('map', 16, 16);
                     map.addTilesetImage('tiles');
-                    //  Create our layer
+                    map.setCollision(objects, true);
                     layer = map.createLayer(0);
                     layer.resizeWorld();
-
-                    //map.addTilesetImage('flag1');
-                    //map.addTilesetImage('flag2');
-                    //map.setTileIndexCallback(flagId, hitFlag, this);
-                    //This will set the map location 2, 0 to call the function
-                    //map.setTileLocationCallback(2, 0, 1, 1, hitCoin, this);
-                    //input
-
 
                     //flags
                     flags = game.add.group();
@@ -84,7 +76,7 @@
                     player2 = game.add.sprite(player2X, player2Y, 'tank2', players);
                     createPlayer(player1);
                     createPlayer(player2);
-                    
+
                     //bullets
                     bullets1 = game.add.group();
                     bullets1.enableBody = true;
