@@ -72,6 +72,8 @@
                     flags = game.add.group();
                     flag1 = flags.create(player1X, player1Y, 'flag1', 0);
                     flag2 = flags.create(player2X, player2Y, 'flag2', 0);
+                    game.physics.enable(flag1);
+                    game.physics.enable(flag2);
 
                     flags.callAll('animations.add', 'animations', 'windy', [0, 1, 2, 3, 4, 5, 6, 7, 8, 7, 6, 5, 4, 3, 2, 1], 4, true);
                     flags.callAll('animations.play', 'animations', 'windy');
@@ -118,21 +120,15 @@
 
                 }
 
-                function hitFlag(player, tile) {
-                    //tile.alpha = 0.2;
-                    //layer.dirty = true;
-                    //return false;
+                function hitFlag(player, flag) {
+                    flag.kill();
                 }
 
                 function hitPlayer(player1, player2) {
                     //players collided with each other
                 }
 
-                function hitPlayer1WithBullet(player1, bullet) {
-                    bullet.kill();
-                }
-
-                function hitPlayer2WithBullet(player2, bullet) {
+                function hitPlayerWithBullet(player1, bullet) {
                     bullet.kill();
                 }
 
@@ -162,8 +158,10 @@
                     game.physics.arcade.collide(player1, layer);
                     game.physics.arcade.collide(player2, layer);
                     game.physics.arcade.collide(player1, player2, hitPlayer, null, this);
-                    game.physics.arcade.collide(player1, bullets2, hitPlayer1WithBullet, null, this);
-                    game.physics.arcade.collide(player2, bullets1, hitPlayer2WithBullet, null, this);
+                    game.physics.arcade.collide(player1, bullets2, hitPlayerWithBullet, null, this);
+                    game.physics.arcade.collide(player2, bullets1, hitPlayerWithBullet, null, this);
+                    game.physics.arcade.collide(player1, flag2, hitFlag, null, this);
+                    game.physics.arcade.collide(player2, flag1, hitFlag, null, this);
 
                     player1.body.velocity.x = 0;
                     player1.body.velocity.y = 0;
