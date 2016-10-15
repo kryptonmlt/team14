@@ -2,17 +2,59 @@
 <html>
     <head>
         <meta charset="UTF-8" />
-        <title>hello phaser!</title>
+        <title>Draw Battle</title>
         <script src="//cdn.jsdelivr.net/phaser/2.5.0/phaser.min.js"></script>
+        <script src="js/jquery-3.1.1.min.js"></script>
     </head>
     <body>
 
         <script type="text/javascript">
-            function preload() {
-                game.load.spritesheet('flag1', 'assets/flag1.png', 158, 316, 8);
-                game.load.spritesheet('flag2', 'assets/flag2.png', 158, 316, 8);
-                
-            }
+            $(document).ready(function () {
+                var game = new Phaser.Game(800, 600, Phaser.AUTO, 'phaserGame', {preload: preload, create: create, update: update});
+
+                var player1X = 50;
+                var player1Y = 100;
+                var player2X = game.width - 200;
+                var player2Y = 100;
+                var flag1X = 50;
+                var flag1Y = 200;
+                var flag2X = game.width - 200;
+                var flag2Y = 200;
+
+                function preload() {
+                    game.load.spritesheet('flag1', 'assets/flag1.png', 158, 316);
+                    game.load.spritesheet('flag2', 'assets/flag2.png', 158, 316);
+                    game.load.image('tank1', 'assets/tank1.png');
+                    game.load.image('tank2', 'assets/tank2.png');
+                    game.load.image('bullet1', 'assets/bullet1.png');
+                    game.load.image('bullet2', 'assets/bullet2.png');
+
+                }
+
+                function create() {
+                    //flags
+                    flags = game.add.group();
+                    flag1 = flags.create(flag1X, flag1Y, 'flag1', 0);
+                    flag2 = flags.create(flag2X, flag2Y, 'flag2', 0);
+
+                    flags.callAll('animations.add', 'animations', 'windy', [0, 1, 2, 3, 4, 5, 6, 7, 8, 7, 6, 5, 4, 3, 2, 1], 4, true);
+                    flags.callAll('animations.play', 'animations', 'windy');
+                    flags.scale.set(0.5, 0.5);
+
+                    //players
+                    players = game.add.group();
+                    player1 = players.create(player1X, player1Y, 'tank1');
+                    player2 = players.create(player2X, player2Y, 'tank2');
+                    players.scale.set(0.25, 0.25);
+
+                    //tilemap
+                    
+                }
+
+                function update() {
+
+                }
+            });
         </script>
 
     </body>
