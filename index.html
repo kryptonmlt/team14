@@ -7,7 +7,6 @@
         <script src="js/jquery-3.1.1.min.js"></script>
     </head>
     <body>
-
         <script type="text/javascript">
             $(document).ready(function () {
 
@@ -19,6 +18,8 @@
 
                 var objects;
 
+                var MAX_PLAYER_HEALTH = 1;
+                var BULLET_DAMAGE = 1;
                 var tileSize = 16;
                 var mapX = 1024;
                 var mapY = 768;
@@ -33,6 +34,8 @@
                 var bulletDelay = 500;
                 var bulletLifeSpan = 700;
 
+                var isStarted = false;
+
                 var game = new Phaser.Game(mapX, mapY, Phaser.AUTO, 'game', {preload: preload, create: create, update: update, render: render});
 
                 function preload() {
@@ -46,7 +49,10 @@
                     game.load.tilemap('map', 'assets/example1.csv', null, Phaser.Tilemap.CSV);
                     game.load.image('tiles', 'assets/example1.jpg');
                     game.load.spritesheet('kaboom', 'assets/explosion.png', 64, 64, 23);
-
+                    game.load.image('button', 'assets/start.png');
+                    game.load.image('cover', 'assets/cover.png');
+                    game.load.image('rematchButton', 'assets/rematch.png');
+                    game.load.bitmapFont('desyrel', 'assets/desyrel.png', 'assets/desyrel.xml');
                 }
 
                 function create() {
@@ -75,8 +81,8 @@
                     players = game.add.group();
                     player1 = game.add.sprite(player1X, player1Y, 'tank1', players);
                     player2 = game.add.sprite(player2X, player2Y, 'tank2', players);
-                    createPlayer(player1);
-                    createPlayer(player2);
+                    createPlayer(player1, "Player 2 Won!", "Player 1 Won!");
+                    createPlayer(player2, "Player 1 Won!", "Player 2 Won!");
 
                     //bullets
                     bullets1 = game.add.group();
@@ -102,9 +108,18 @@
                     }
 
                     cursors = game.input.keyboard.createCursorKeys();
-                    game.input.onDown.add(gofull, this);
                     game.input.keyboard.addKeyCapture([Phaser.Keyboard.SPACEBAR]);
 
+                    cover = game.add.sprite(0, 0, 'cover');
+                    button = game.add.button(game.world.centerX - 95, 400, 'button', startOnClick, this, 2, 1, 0);
+
+                }
+
+                function startOnClick() {
+                    button.kill();
+                    cover.kill();
+                    gofull();
+                    isStarted = true;
                 }
 
                 function gofull() {
@@ -116,43 +131,52 @@
                     {
                         game.scale.startFullScreen(false);
                     }
-
                 }
 
                 function hitFlag(player, flag) {
                     flag.kill();
+                    endScreen(player.flagMessage);
                 }
 
                 function hitPlayer(player1, player2) {
                     //players collided with each other
+                    //do nothing
                 }
 
                 function hitPlayerWithBullet(player, bullet) {
                     bullet.kill();
+                    player.health = player.health - BULLET_DAMAGE;
 
-                    var explosionAnimation = explosions.getFirstExists(false);
-                    explosionAnimation.reset(player.x, player.y);
-                    explosionAnimation.play('kaboom', 30, false, true);
+                    if (player.health <= 0) {// player died
+                        var explosionAnimation = explosions.getFirstExists(false);
+                        explosionAnimation.reset(player.x, player.y);
+                        explosionAnimation.play('kaboom', 30, false, true);
+                        player.kill();
+                        endScreen(player.deathMessage);
+                    }
+                }
+                function rematchLink() {
+                    window.location.href = "/team14/";
                 }
 
-                function createPlayer(player) {
+                function endScreen(message) {
+                    isStarted = false;
+                    bmpText = game.add.bitmapText(200, 100, 'desyrel', message, 64);
+                    game.add.button(game.world.centerX - 95, 400, 'rematchButton', rematchLink, this, 2, 1, 0);
+                }
+
+                function createPlayer(player, deathMessage, flagMessage) {
                     player.anchor.set(0.5);
                     game.physics.enable(player);
                     player.body.maxAngular = 500;
                     player.body.angularDrag = 50;
                     player.body.collideWorldBounds = true;
+                    player.health = MAX_PLAYER_HEALTH;
+                    player.deathMessage = deathMessage;
+                    player.flagMessage = flagMessage;
                 }
 
-                function update() {
-
-                    game.physics.arcade.collide(player1, layer);
-                    game.physics.arcade.collide(player2, layer);
-                    game.physics.arcade.collide(player1, player2, hitPlayer, null, this);
-                    game.physics.arcade.collide(player1, bullets2, hitPlayerWithBullet, null, this);
-                    game.physics.arcade.collide(player2, bullets1, hitPlayerWithBullet, null, this);
-                    game.physics.arcade.collide(player1, flag2, hitFlag, null, this);
-                    game.physics.arcade.collide(player2, flag1, hitFlag, null, this);
-
+                function resetVelocity() {
                     player1.body.velocity.x = 0;
                     player1.body.velocity.y = 0;
                     player1.body.angularVelocity = 0;
@@ -160,41 +184,62 @@
                     player2.body.velocity.x = 0;
                     player2.body.velocity.y = 0;
                     player2.body.angularVelocity = 0;
+                }
 
-                    //Player 1
-                    if (cursors.left.isDown)
-                    {
-                        player1.body.angularVelocity = -200;
-                    } else if (cursors.right.isDown)
-                    {
-                        player1.body.angularVelocity = 200;
-                    }
+                function update() {
+                    if (isStarted) {
+                        game.physics.arcade.collide(player1, layer);
+                        game.physics.arcade.collide(player2, layer);
+                        game.physics.arcade.collide(player1, player2, hitPlayer, null, this);
+                        game.physics.arcade.collide(player1, bullets2, hitPlayerWithBullet, null, this);
+                        game.physics.arcade.collide(player2, bullets1, hitPlayerWithBullet, null, this);
+                        game.physics.arcade.collide(player1, flag2, hitFlag, null, this);
+                        game.physics.arcade.collide(player2, flag1, hitFlag, null, this);
 
-                    if (cursors.up.isDown)
-                    {
-                        game.physics.arcade.velocityFromAngle(player1.angle, 200, player1.body.velocity);
-                    }
+                        resetVelocity();
 
-                    if (game.input.keyboard.isDown(Phaser.Keyboard.M))
-                    {
-                        fireBulletPlayer1();
-                    }
+                        //Player 1
+                        if (cursors.left.isDown)
+                        {
+                            player1.body.angularVelocity = -200;
+                        } else if (cursors.right.isDown)
+                        {
+                            player1.body.angularVelocity = 200;
+                        }
 
-                    //Player 2
-                    if (game.input.keyboard.isDown(Phaser.Keyboard.A))
-                    {
-                        player2.body.angularVelocity = -200;
-                    } else if (game.input.keyboard.isDown(Phaser.Keyboard.D))
-                    {
-                        player2.body.angularVelocity = 200;
-                    }
-                    if (game.input.keyboard.isDown(Phaser.Keyboard.W)) {
-                        game.physics.arcade.velocityFromAngle(player2.angle, 200, player2.body.velocity);
-                    }
+                        if (cursors.up.isDown)
+                        {
+                            game.physics.arcade.velocityFromAngle(player1.angle, 200, player1.body.velocity);
+                        }
 
-                    if (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR))
-                    {
-                        fireBulletPlayer2();
+                        if (game.input.keyboard.isDown(Phaser.Keyboard.M))
+                        {
+                            fireBulletPlayer1();
+                        }
+
+                        //Player 2
+                        if (game.input.keyboard.isDown(Phaser.Keyboard.A))
+                        {
+                            player2.body.angularVelocity = -200;
+                        } else if (game.input.keyboard.isDown(Phaser.Keyboard.D))
+                        {
+                            player2.body.angularVelocity = 200;
+                        }
+                        if (game.input.keyboard.isDown(Phaser.Keyboard.W)) {
+                            game.physics.arcade.velocityFromAngle(player2.angle, 200, player2.body.velocity);
+                        }
+
+                        if (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR))
+                        {
+                            fireBulletPlayer2();
+                        }
+
+                        if (game.input.keyboard.isDown(Phaser.Keyboard.ESC))
+                        {
+                            gofull();
+                        }
+                    } else {
+                        resetVelocity();
                     }
                 }
 
@@ -241,5 +286,7 @@
             });
         </script>
 
+        <div id="game">
+        </div>
     </body>
 </html>
