@@ -48,7 +48,7 @@
             function getYFromTile(tile) {
                 return (tile / 64) * 16;
             }
-
+            var showDebug = false;
             $(document).ready(function () {
 
                 var player1X = getXFromTile(QueryString.player1);
@@ -121,7 +121,7 @@
                             return parseInt(item, 10);
                         })
                         map.setCollision(objectsArray);
-                        layer.debug = true;
+                        layer.debug = showDebug;
                         //flags
                         flags = game.add.group();
                         flag1 = flags.create(player1X, player1Y, 'flag1', 0);
@@ -288,7 +288,7 @@
 
                             if (cursors.up.isDown)
                             {
-                                game.physics.arcade.velocityFromAngle(player1.angle, 200, player1.body.velocity);
+                                game.physics.arcade.velocityFromAngle(player1.angle, 100, player1.body.velocity);
                             }
 
                             if (game.input.keyboard.isDown(Phaser.Keyboard.M))
@@ -305,7 +305,7 @@
                                 player2.body.angularVelocity = 200;
                             }
                             if (game.input.keyboard.isDown(Phaser.Keyboard.W)) {
-                                game.physics.arcade.velocityFromAngle(player2.angle, 200, player2.body.velocity);
+                                game.physics.arcade.velocityFromAngle(player2.angle, 100, player2.body.velocity);
                             }
 
                             if (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR))
@@ -316,6 +316,11 @@
                             if (game.input.keyboard.isDown(Phaser.Keyboard.ESC))
                             {
                                 gofull();
+                            }
+
+                            if (game.input.keyboard.isDown(Phaser.Keyboard.P))
+                            {
+                                toggle();
                             }
                         } else {
                             resetVelocity();
@@ -356,16 +361,24 @@
                         }
                     }
 
-                    function render() {
-
-                        game.debug.body(player1);
-                        game.debug.body(player2);
-                        game.debug.body(flag1);
-                        game.debug.body(flag2);
-
+                    function toggle() {
+                        showDebug = !showDebug;
+                        if (!showDebug)
+                        {
+                            game.debug.reset();
+                            layer.debug = false;
+                        }
                     }
 
-
+                    function render() {
+                        if (showDebug) {
+                            game.debug.body(player1);
+                            game.debug.body(player2);
+                            game.debug.body(flag1);
+                            game.debug.body(flag2);
+                            layer.debug = true;
+                        }
+                    }
                 });
             });
         </script>
