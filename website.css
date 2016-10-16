@@ -11,7 +11,7 @@ h1 {
 p {
 	color: yellow;
 	margin: 20px;
-	font-size : 30px;
+	font-size : 24px;
 	font-family : "Times New Roman", monospace;
 }
 * {
@@ -39,8 +39,8 @@ p {
 	}
 
 	ul#choose{
-		margin-top: -100px;
-		margin-left: 800px;
+		margin-top: 1300px;
+		margin-left: 500px;
 		position: absolute;
 		text-align: center;
 	}
@@ -50,7 +50,9 @@ p {
 	}
 	
 		
-	
+	img#alt{
+		color: white;
+	}
 	li {
 		list-style: none;
 		position: relative;
