@@ -91,7 +91,7 @@ def upload_file():
             # compute the stuff
             p1, p2, wall_tileids, pxlimg, orgimg1, background_tile = pictureprocess.create_world(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
-            print backgroun_tile
+            print background_tile
 
             # picture_url = url_for('uploaded_file', filename=filename)
             picture_url = filename
@@ -99,7 +99,7 @@ def upload_file():
             import json
             result = json.dumps({'p1':p1, 'p2':p2,
                                 # 'objs':','.join([str(x) for x in list(wall_tileids)]),
-                                'background_tile':backgroun_tile,
+                                'background_tile':background_tile,
                                 'objs':'wall_ids.txt',
                                 'pictureUrl':picture_url}, separators=(',', ':'))
 
