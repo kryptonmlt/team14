@@ -48,7 +48,7 @@ def create_world(path):
     sorted_matches = sorted([(m, n) for m, n in matches], key=lambda x: np.abs(x[0].distance - x[1].distance))
 
     flag_xy = []
-    for match in [kp2[ni.trainIdx].pt for (mi, ni) in sorted_matches[:10]]:
+    for match in [kp2[ni.trainIdx].pt for (mi, ni) in sorted_matches]:
         flag_xy.append(match)
 
     from collections import Counter
