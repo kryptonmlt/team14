@@ -67,9 +67,9 @@ def create_world(path):
     player2 = x/16 + 64*y/16
 
     ## pixelate by 16x16
-    pxlimg = np.zeros((48,64,3), dtype=np.uint8)
+    pxlimg = np.zeros((4*48,4*64,3), dtype=np.uint8)
     img = img1
-    pR = 16
+    pR = 4
 
     for i in range(pxlimg.shape[0]):
         for j in range(pxlimg.shape[1]):
