@@ -110,21 +110,33 @@
                 top:2px;
             }
 
+            #container{
+                width:100%;
+            }
+
+            #content {
+                width: 50%;
+                margin: 0 auto; 
+            }
+
         </style>
     </head>
     <body>
+        <div id="container">
+            <div id="content">
+                <h1>PapAR Battles</h1>
+                <ul>
+                    <li>Draw on paper</li>
+                    <li>Take Picture</li>
+                    <li>Play!</li>
+                </ul>
 
-        <h1>PapAR Battles</h1>
-        <ul>
-            <li>Draw on paper</li>
-            <li>Take Picture</li>
-            <li>Play!</li>
-        </ul>
-
-        <form id="upload-file" method="post" enctype="multipart/form-data">
-            <input name="file" type="file">
-            <button id="upload-file-btn" type="button">Upload</button>
-        </form>
+                <form id="upload-file" method="post" enctype="multipart/form-data">
+                    <input name="file" type="file">
+                    <button id="upload-file-btn" type="button">Upload</button>
+                </form>
+            </div>
+        </div>
         <!--<a href="#" class="button grey">Download</a>-->
     </body>
 </html>
