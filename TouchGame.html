@@ -1,0 +1,492 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Draw Battle</title>
+        <script src="js/phaser.min.js"></script>
+        <script src="js/jquery-3.1.1.min.js"></script>
+        <style>
+            #container{
+                width:100%;
+            }
+            #game {
+                width: 50%;
+                margin: 0 auto; 
+            }
+        </style>
+    </head>
+    <body>
+        <script type="text/javascript">
+
+            var QueryString = function () {
+                // This function is anonymous, is executed immediately and 
+                // the return value is assigned to QueryString!
+                var query_string = {};
+                var query = window.location.search.substring(1);
+                var vars = query.split("&");
+                for (var i = 0; i < vars.length; i++) {
+                    var pair = vars[i].split("=");
+                    // If first entry with this name
+                    if (typeof query_string[pair[0]] === "undefined") {
+                        query_string[pair[0]] = decodeURIComponent(pair[1]);
+                        // If second entry with this name
+                    } else if (typeof query_string[pair[0]] === "string") {
+                        var arr = [query_string[pair[0]], decodeURIComponent(pair[1])];
+                        query_string[pair[0]] = arr;
+                        // If third or later entry with this name
+                    } else {
+                        query_string[pair[0]].push(decodeURIComponent(pair[1]));
+                    }
+                }
+                return query_string;
+            }();
+
+            function getXFromTile(tile) {
+                return (tile % 64) * 16;
+            }
+
+            function getYFromTile(tile) {
+                return (tile / 64) * 16;
+            }
+
+            $(document).ready(function () {
+
+                var player1X = getXFromTile(QueryString.player1);
+                var player1Y = getYFromTile(QueryString.player1);
+
+                var player2X = getXFromTile(QueryString.player2);
+                var player2Y = getYFromTile(QueryString.player2);
+
+                var objects = QueryString.objs;
+                var pictureUrl = QueryString.pictureUrl;
+
+                var MAX_PLAYER_HEALTH = 1;
+                var BULLET_DAMAGE = 1;
+                var tileSize = 4;
+                var mapX = 1024;
+                var mapY = 768;
+                var flagTileX = 32;
+                var flagTileY = 64;
+
+                var bullets1;
+                var bullets2;
+                var bulletTime1 = 0;
+                var bulletTime2 = 0;
+                var bulletPixelPerSecond = 400;
+                var bulletDelay = 500;
+                var bulletLifeSpan = 700;
+
+                var isStarted = false;
+
+                $.get("pythonserver/" + objects, function (data) {
+
+                    var game = new Phaser.Game(mapX, mapY, Phaser.AUTO, 'game', {preload: preload, create: create, update: update, render: render});
+
+                    function preload() {
+                        game.load.spritesheet('flag1', 'assets/flag1.png', flagTileX, flagTileY);
+                        game.load.spritesheet('flag2', 'assets/flag2.png', flagTileX, flagTileY);
+                        game.load.image('tank1', 'assets/tank1.png');
+                        game.load.image('tank2', 'assets/tank2.png');
+                        game.load.image('bullet1', 'assets/bullet1.png');
+                        game.load.image('bullet2', 'assets/bullet2.png');
+
+                        game.load.tilemap('map', 'assets/timemap_4x4.csv', null, Phaser.Tilemap.CSV);
+                        // game.load.image('tiles', 'assets/example1.jpg');
+                        game.load.image('tiles', "pythonserver/" + pictureUrl);
+                        game.load.spritesheet('kaboom', 'assets/explosion.png', 64, 64, 23);
+                        game.load.image('button', 'assets/start.png');
+                        game.load.image('cover', 'assets/cover.png');
+                        game.load.image('rematchButton', 'assets/rematch.png');
+                        game.load.bitmapFont('desyrel', 'assets/desyrel.png', 'assets/desyrel.xml');
+                        game.load.audio('music', ['assets/gameMusic.mp3', 'assets/gameMusic.ogg']);
+                        game.load.audio('shoot', ['assets/shoot.mp3', 'assets/shoot.ogg']);
+                        game.load.audio('explosion', ['assets/explosion.mp3', 'assets/explosion.ogg']);
+                        game.load.audio('victory', ['assets/victory.mp3', 'assets/victory.ogg']);
+                    }
+
+                    function create() {
+
+                        game.physics.startSystem(Phaser.Physics.ARCADE);
+                        game.scale.fullScreenScaleMode = Phaser.ScaleManager.EXACT_FIT;
+
+						//Create new pointers
+						game.input.addPointer();
+						game.input.addPointer();
+						
+						
+                        //tilemap
+                        map = game.add.tilemap('map', tileSize, tileSize);
+                        map.addTilesetImage('tiles');
+                        layer = map.createLayer(0);
+                        layer.resizeWorld();
+                        /*var objectsArray = objects.split(",").map(function (item) {
+                         return parseInt(item, 10);
+                         });*/
+                        var objectsArray = data.split(",").map(function (item) {
+                            return parseInt(item, 10);
+                        })
+                        map.setCollision(objectsArray);
+                        layer.debug = true;
+                        //flags
+                        flags = game.add.group();
+                        flag1 = flags.create(player1X, player1Y, 'flag1', 0);
+                        flag2 = flags.create(player2X, player2Y, 'flag2', 0);
+                        game.physics.enable(flag1);
+                        game.physics.enable(flag2);
+
+                        flags.callAll('animations.add', 'animations', 'windy', [0, 1, 2, 3, 4, 5, 6, 7, 8, 7, 6, 5, 4, 3, 2, 1], 4, true);
+                        flags.callAll('animations.play', 'animations', 'windy');
+
+                        //bullets
+                        bullets1 = game.add.group();
+                        bullets1.enableBody = true;
+                        bullets1.physicsBodyType = Phaser.Physics.ARCADE;
+                        bullets1.createMultiple(40, 'bullet1');
+                        bullets1.setAll('anchor.x', 0.5);
+                        bullets1.setAll('anchor.y', 0.5);
+
+                        bullets2 = game.add.group();
+                        bullets2.enableBody = true;
+                        bullets2.physicsBodyType = Phaser.Physics.ARCADE;
+                        bullets2.createMultiple(40, 'bullet2');
+                        bullets2.setAll('anchor.x', 0.5);
+                        bullets2.setAll('anchor.y', 0.5);
+
+                        //players
+                        players = game.add.group();
+                        player1 = game.add.sprite(player1X, player1Y, 'tank1', players);
+                        player2 = game.add.sprite(player2X, player2Y, 'tank2', players);
+                        createPlayer(player1, "Player 2 Won!", "Player 1 Won!");
+                        createPlayer(player2, "Player 1 Won!", "Player 2 Won!");
+
+                        //explosion
+                        explosions = game.add.group();
+                        for (var i = 0; i < 10; i++) {
+                            var explosionAnimation = explosions.create(0, 0, 'kaboom', [0], false);
+                            explosionAnimation.anchor.setTo(0.5, 0.5);
+                            explosionAnimation.animations.add('kaboom');
+                        }
+
+                        cursors = game.input.keyboard.createCursorKeys();
+                        game.input.keyboard.addKeyCapture([Phaser.Keyboard.SPACEBAR]);
+
+                        cover = game.add.sprite(0, 0, 'cover');
+                        button = game.add.button(game.world.centerX - 95, 400, 'button', startOnClick, this, 2, 1, 0);
+
+                        //sounds
+                        music = game.add.audio('music');
+                        music.volume = 0.2;
+                        music.play();
+                        music.onStop.add(musicStopped, this);
+                        explosionSound = game.add.audio('explosion');
+                        explosionSound.volume = 1;
+                        shoot1Sound = game.add.audio('shoot');
+                        shoot1Sound.volume = 1;
+                        shoot2Sound = game.add.audio('shoot');
+                        shoot2Sound.volume = 1;
+                        victorySound = game.add.audio('victory');
+                        victorySound.volume = 1;
+                    }
+                    function musicStopped(sound) {
+                        sound.restart();
+                    }
+
+                    function startOnClick() {
+                        button.kill();
+                        cover.kill();
+                        gofull();
+                        isStarted = true;
+                    }
+
+                    function gofull() {
+
+                        if (game.scale.isFullScreen)
+                        {
+                            game.scale.stopFullScreen();
+                        } else
+                        {
+                            game.scale.startFullScreen(false);
+                        }
+                    }
+
+                    function hitFlag(player, flag) {
+                        flag.kill();
+                        endScreen(player.flagMessage);
+                    }
+
+                    function hitWall(bullet, tile) {
+                        bullet.kill();
+                    }
+
+                    function hitPlayer(player1, player2) {
+                        //players collided with each other
+                        //do nothing
+                    }
+
+                    function hitPlayerWithBullet(player, bullet) {
+                        bullet.kill();
+                        player.health = player.health - BULLET_DAMAGE;
+                        explosionSound.play();
+                        if (player.health <= 0) {// player died
+                            var explosionAnimation = explosions.getFirstExists(false);
+                            explosionAnimation.reset(player.x, player.y);
+                            explosionAnimation.play('kaboom', 30, false, true);
+                            player.kill();
+                            endScreen(player.deathMessage);
+                        }
+                    }
+
+                    function rematchLink() {
+                        window.location.href = "./game.html?player1=" + QueryString.player1 + "&player2=" + QueryString.player2 + "&objs=" + QueryString.objs + "&pictureUrl=" + QueryString.pictureUrl;
+                    }
+
+                    function endScreen(message) {
+                        isStarted = false;
+                        victorySound.play();
+                        bmpText = game.add.bitmapText(200, 100, 'desyrel', message, 125);
+                        game.add.button(game.world.centerX - 95, 400, 'rematchButton', rematchLink, this, 2, 1, 0);
+                    }
+
+                    function createPlayer(player, deathMessage, flagMessage) {
+                        player.anchor.set(0.5);
+                        game.physics.enable(player);
+                        player.body.maxAngular = 500;
+                        player.body.angularDrag = 50;
+                        player.body.collideWorldBounds = true;
+                        player.health = MAX_PLAYER_HEALTH;
+                        player.deathMessage = deathMessage;
+                        player.flagMessage = flagMessage;
+                    }
+
+                    function resetVelocity() {
+                        player1.body.velocity.x = 0;
+                        player1.body.velocity.y = 0;
+                        player1.body.angularVelocity = 0;
+
+                        player2.body.velocity.x = 0;
+                        player2.body.velocity.y = 0;
+                        player2.body.angularVelocity = 0;
+                    }
+
+                    function update() {
+                        if (isStarted) {
+                            game.physics.arcade.collide(player1, layer);
+                            game.physics.arcade.collide(player2, layer);
+                            game.physics.arcade.collide(bullets1, layer, hitWall, null, this);
+                            game.physics.arcade.collide(bullets2, layer, hitWall, null, this);
+                            game.physics.arcade.collide(player1, player2, hitPlayer, null, this);
+                            game.physics.arcade.collide(player1, bullets2, hitPlayerWithBullet, null, this);
+                            game.physics.arcade.collide(player2, bullets1, hitPlayerWithBullet, null, this);
+                            game.physics.arcade.collide(player1, flag2, hitFlag, null, this);
+                            game.physics.arcade.collide(player2, flag1, hitFlag, null, this);
+
+                            resetVelocity();
+
+                            //Player 1
+                            if (cursors.left.isDown)
+                            {
+                                player1.body.angularVelocity = -200;
+                            } else if (cursors.right.isDown)
+                            {
+                                player1.body.angularVelocity = 200;
+                            }
+
+                            if (cursors.up.isDown)
+                            {
+                                game.physics.arcade.velocityFromAngle(player1.angle, 200, player1.body.velocity);
+                            }
+
+                            if (game.input.keyboard.isDown(Phaser.Keyboard.M))
+                            {
+                                fireBulletPlayer1();
+                            }
+							//Player1 Touch controls
+							if (game.input.pointer1.isDown && (game.input.pointer1.x > 0 && game.input.pointer1.x < 201) && (game.input.pointer1.y < 300 && game.input.pointer1.y > 0))
+							{
+								game.physics.arcade.moveToXY(player1,player1.x + (game.input.pointer1.x - 100),player1.y - (game.input.pointer1.y - 150), 100);
+						
+							} else if (game.input.pointer2.isDown && (game.input.pointer2.x > 0 && game.input.pointer2.x < 201) && (game.input.pointer2.y < 300 && game.input.pointer2.y > 0))
+							{
+								game.physics.arcade.moveToXY(player1,player1.x + (game.input.pointer2.x - 100),player1.y - (game.input.pointer2.y - 150), 100);
+						
+							} else if (game.input.pointer3.isDown && (game.input.pointer3.x > 0 && game.input.pointer3.x < 201) && (game.input.pointer3.y < 300 && game.input.pointer3.y > 0))
+							{
+								game.physics.arcade.moveToXY(player1,player1.x + (game.input.pointer3.x - 100),player1.y - (game.input.pointer3.y - 150), 100);
+						
+							} else if (game.input.pointer4.isDown && (game.input.pointer4.x > 0 && game.input.pointer4.x < 201) && (game.input.pointer4.y < 300 && game.input.pointer4.y > 0))
+							{
+								game.physics.arcade.moveToXY(player1,player1.x + (game.input.pointer4.x - 100),player1.y - (game.input.pointer4.y - 150), 100);
+							}
+							else 
+							{
+								player1.body.velocity.setTo(0,0);
+							}
+							if (game.input.pointer1.isDown && (game.input.pointer1.x > 0 && game.input.pointer1.x < 200) && (game.input.pointer1.y < 721 && game.input.pointer1.y > 579))
+							{
+								fireBulletPlayer1Touch(game.input.pointer1);
+							} else if (game.input.pointer2.isDown && (game.input.pointer2.x > 0 && game.input.pointer2.x < 201) && (game.input.pointer2.y < 721 && game.input.pointer2.y > 579))
+							{
+								fireBulletPlayer1Touch(game.input.pointer2);
+							} else if (game.input.pointer3.isDown && (game.input.pointer3.x > 0 && game.input.pointer3.x < 201) && (game.input.pointer3.y < 721 && game.input.pointer3.y > 579))
+							{
+								fireBulletPlayer1Touch(game.input.pointer3);
+							} else if (game.input.pointer4.isDown && (game.input.pointer4.x > 0 && game.input.pointer4.x < 201) && (game.input.pointer4.y < 721 && game.input.pointer4.y > 579))
+							{
+								fireBulletPlayer1Touch(game.input.pointer4);
+							}
+							
+							
+							
+						
+                            //Player 2
+                            if (game.input.keyboard.isDown(Phaser.Keyboard.A))
+                            {
+                                player2.body.angularVelocity = -200;
+                            } else if (game.input.keyboard.isDown(Phaser.Keyboard.D))
+                            {
+                                player2.body.angularVelocity = 200;
+                            }
+                            if (game.input.keyboard.isDown(Phaser.Keyboard.W)) {
+                                game.physics.arcade.velocityFromAngle(player2.angle, 200, player2.body.velocity);
+                            }
+
+                            if (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR))
+                            {
+                                fireBulletPlayer2();
+                            }
+							//Player2 Touch controls
+							if (game.input.pointer3.isDown && (game.input.pointer3.x > 700 && game.input.pointer3.x < 1000) && (game.input.pointer3.y < 300 && game.input.pointer3.y > 0))
+							{
+								game.physics.arcade.moveToXY(player2,player2.x + (game.input.pointer3.x - 850),player1.y - (game.input.pointer3.y - 150), 100);
+							}
+							else if (game.input.pointer1.isDown && (game.input.pointer1.x > 700 && game.input.pointer1.x < 1000) && (game.input.pointer1.y < 300 && game.input.pointer1.y > 0))
+							{
+								game.physics.arcade.moveToXY(player2,player2.x + (game.input.pointer1.x - 850),player1.y - (game.input.pointer1.y - 150), 100);
+
+							} else if (game.input.pointer3.isDown && (game.input.pointer2.x > 700 && game.input.pointer2.x < 1000) && (game.input.pointer2.y < 300 && game.input.pointer2.y > 0))
+							{
+								game.physics.arcade.moveToXY(player2,player2.x + (game.input.pointer2.x - 850),player1.y - (game.input.pointer2.y - 150), 100);
+
+							} else if (game.input.pointer3.isDown && (game.input.pointer4.x > 700 && game.input.pointer4.x < 1000) && (game.input.pointer4.y < 300 && game.input.pointer4.y > 0))
+							{
+								game.physics.arcade.moveToXY(player2,player2.x + (game.input.pointer4.x - 850),player1.y - (game.input.pointer4.y - 150), 100);
+
+							}
+							else 
+							{
+								player2.body.velocity.setTo(0,0);
+							}
+							if (game.input.pointer1.isDown && (game.input.pointer1.x > 700 && game.input.pointer1.x < 1000) && (game.input.pointer1.y < 721 && game.input.pointer1.y > 579))
+							{
+								fireBulletPlayer2Touch(game.input.pointer1);
+							} else if (game.input.pointer2.isDown && (game.input.pointer2.x > 700 && game.input.pointer2.x < 1000) && (game.input.pointer2.y < 721 && game.input.pointer2.y > 579))
+							{
+								fireBulletPlayer2Touch(game.input.pointer2);
+							} else if (game.input.pointer3.isDown && (game.input.pointer3.x > 700 && game.input.pointer3.x < 1000) && (game.input.pointer3.y < 721 && game.input.pointer3.y > 579))
+							{
+								fireBulletPlayer2Touch(game.input.pointer3);
+							} else if (game.input.pointer4.isDown && (game.input.pointer4.x > 700 && game.input.pointer4.x < 1000) && (game.input.pointer4.y < 721 && game.input.pointer4.y > 579))
+							{
+								fireBulletPlayer2(game.input.pointer4);
+							}
+
+                            if (game.input.keyboard.isDown(Phaser.Keyboard.ESC))
+                            {
+                                gofull();
+                            }
+                        } else {
+                            resetVelocity();
+                        }
+                    }
+
+                    function fireBulletPlayer1() {
+
+                        if (game.time.now > bulletTime1)
+                        {
+                            bullet1 = bullets1.getFirstExists(false);
+                            if (bullet1)
+                            {
+                                bullet1.reset(player1.body.x, player1.body.y);
+                                bullet1.lifespan = bulletLifeSpan;
+                                bullet1.rotation = player1.rotation;
+                                game.physics.arcade.velocityFromRotation(player1.rotation, bulletPixelPerSecond, bullet1.body.velocity);
+                                bulletTime1 = game.time.now + bulletDelay;
+                                shoot1Sound.play();
+                            }
+                        }
+                    }
+
+                    function fireBulletPlayer2() {
+
+                        if (game.time.now > bulletTime2)
+                        {
+                            bullet2 = bullets2.getFirstExists(false);
+                            if (bullet2)
+                            {
+                                bullet2.reset(player2.body.x, player2.body.y);
+                                bullet2.lifespan = bulletLifeSpan;
+                                bullet2.rotation = player2.rotation;
+                                game.physics.arcade.velocityFromRotation(player2.rotation, bulletPixelPerSecond, bullet2.body.velocity);
+                                bulletTime2 = game.time.now + bulletDelay;
+                                shoot2Sound.play();
+                            }
+                        }
+                    }
+					
+					
+					function fireBulletPlayer1Touch(pointer) {
+					if (game.time.now > bulletTime1)
+                    {
+                        bullet1 = bullets1.getFirstExists(false);
+                        if (bullet1)
+                        {
+                            bullet1.reset(player1.body.x, player1.body.y);
+                            bullet1.lifespan = bulletLifeSpan;
+                            bullet1.rotation = game.physics.arcade.moveToXY(bullet1, (player1.x + (pointer.x-100)), (player1.y - (pointer.y-650)),500);
+                            //game.physics.arcade.velocityFromRotation(player1.rotation, bulletPixelPerSecond, bullet1.body.velocity);
+                            bulletTime1 = game.time.now + bulletDelay;
+                        }
+                    }
+				}
+				
+				
+				function fireBulletPlayer2Touch(pointer) {
+					if (game.time.now > bulletTime2)
+                    {
+                        bullet2 = bullets2.getFirstExists(false);
+                        if (bullet2)
+                        {
+                            bullet2.reset(player2.body.x, player2.body.y);
+                            bullet2.lifespan = bulletLifeSpan;
+                            bullet2.rotation = game.physics.arcade.moveToXY(bullet2, (player2.x + (pointer.x-850)), (player2.y - (pointer.y-650)),500);
+                            //game.physics.arcade.velocityFromRotation(player1.rotation, bulletPixelPerSecond, bullet1.body.velocity);
+                            bulletTime2 = game.time.now + bulletDelay;
+                        }
+                    }
+				}
+				
+				
+				
+				
+				
+
+                    function render() {
+
+                        game.debug.body(player1);
+                        game.debug.body(player2);
+                        game.debug.body(flag1);
+                        game.debug.body(flag2);
+
+                    }
+
+
+                });
+            });
+        </script>
+        <div id="container">
+            <div id="game">
+
+            </div>
+        </div>
+    </body>
+</html>
