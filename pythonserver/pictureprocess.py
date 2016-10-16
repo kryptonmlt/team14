@@ -72,5 +72,8 @@ def create_world(path):
     pxlimg_grs = cv2.cvtColor(pxlimg, cv2.COLOR_RGB2GRAY)
     ret, frame = cv2.threshold(pxlimg_grs, 0,255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
     background_idx = np.argwhere(~frame.ravel())
+    background_tile = np.argwhere(frame.ravel())[0][0]
 
-    return player1, player2, background_idx, pxlimg, img1
+    pxlimg_upsize = misc.imresize(pxlimg, (768, 1024))
+
+    return player1, player2, background_idx, pxlimg_upsize, img1, background_tile

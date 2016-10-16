@@ -89,7 +89,9 @@ def upload_file():
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
             # compute the stuff
-            p1, p2, wall_tileids, pxlimg, orgimg1 = pictureprocess.create_world(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            p1, p2, wall_tileids, pxlimg, orgimg1, backgroun_tile = pictureprocess.create_world(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+            print backgroun_tile
 
             # picture_url = url_for('uploaded_file', filename=filename)
             picture_url = filename
@@ -97,13 +99,14 @@ def upload_file():
             import json
             result = json.dumps({'p1':p1, 'p2':p2,
                                 # 'objs':','.join([str(x) for x in list(wall_tileids)]),
+                                'backgroun_tile':backgroun_tile,
                                 'objs':'wall_ids.txt',
                                 'pictureUrl':picture_url}, separators=(',', ':'))
 
             ## save the pixelated image
             import scipy
             from scipy import misc
-            misc.imsave(os.path.join(app.config['UPLOAD_FOLDER'], filename), orgimg1)
+            misc.imsave(os.path.join(app.config['UPLOAD_FOLDER'], filename), pxlimg)
 
             ## save the walls position
             with open('./wall_ids.txt', 'w') as f:
