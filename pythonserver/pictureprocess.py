@@ -21,13 +21,14 @@ def create_world(path):
     img1 = misc.imresize(img1, (768, 1024))
 
     ## load the player
-    player = np.zeros((64, 64, 3))
-    cv2.circle(player, (32, 32), 30, (1, 1, 1), 3)
-    cv2.line(player, (0, 0), (64, 64), (1, 1, 1), 3)
-    cv2.line(player, (0, 64), (64, 0), (1, 1, 1), 3)
+    player = np.zeros((64,64,3), dtype=np.uint8)
+    cv2.circle(player, (32,32), 30, (1,1,1), 3)
+    cv2.line(player, (0,0), (64,64), (1,1,1), 3)
+    cv2.line(player, (0,64), (64,0), (1,1,1), 3)
+    player *= 255
 
-    ## match
-    player_255_uint8 = player.astype(np.uint8) * 255
+    ## match the player locations
+    player_255_uint8 = player
 
     FLANN_INDEX_KDTREE = 0
     MIN_MATCH_COUNT = 5
@@ -74,9 +75,13 @@ def create_world(path):
         for j in range(pxlimg.shape[1]):
             pxlimg[i,j] = np.mean(img[i*pR:(i+1)*pR, j*pR:(j+1)*pR].reshape(-1,3), axis=0, dtype=int)
 
-    ## get the background
-    median_pxlimg = np.median(pxlimg.reshape(-1,3), axis=0)
-    background_idx = np.argwhere((np.linalg.norm((pxlimg.reshape(-1,3) - median_pxlimg), axis=1)) < 50)
+    pxlimg_grs = cv2.cvtColor(pxlimg, cv2.COLOR_RGB2GRAY)
+    ret, frame = cv2.threshold(pxlimg_grs, 0,255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+    background_idx = np.argwhere(frame.ravel())
+
+    # ## get the background
+    # median_pxlimg = np.median(pxlimg.reshape(-1,3), axis=0)
+    # background_idx = np.argwhere((np.linalg.norm((pxlimg.reshape(-1,3) - median_pxlimg), axis=1)) < 50)
 
     ## tile id for non background tiles
     wall_tileid = set(range(48*64)) - set(np.unique(background_idx))
