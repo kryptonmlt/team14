@@ -7,7 +7,7 @@ import cv2
 
 
 def create_world(path):
-    ## load the image
+    ## load the image from path saved in POST request
     img0 = misc.imread(path)
 
     ## make sure it is landscape
@@ -20,7 +20,7 @@ def create_world(path):
     ## resize to (768, 1024)
     img1 = misc.imresize(img1, (768, 1024))
 
-    ## load the player
+    ## create the player marker
     player = np.zeros((64,64,3), dtype=np.uint8)
     cv2.circle(player, (32,32), 20, (1,1,1), 3)
     cv2.line(player, (10,10), (54,54), (1,1,1), 3)
@@ -31,22 +31,17 @@ def create_world(path):
     player_255_uint8 = cv2.cvtColor(player, cv2.COLOR_RGB2GRAY)
     img_grs = cv2.cvtColor(img1, cv2.COLOR_RGB2GRAY)
 
-
     FLANN_INDEX_KDTREE = 0
     MIN_MATCH_COUNT = 5
-
     sift = cv2.SIFT()
     kp1, des1 = sift.detectAndCompute(~player_255_uint8, None)
     kp2, des2 = sift.detectAndCompute(img_grs, None)
-
     index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
     search_params = dict(checks=50)
     bfMatcher = cv2.BFMatcher()
     matches = bfMatcher.knnMatch(des1, des2, k=2)
 
-    ## get the most matches
     sorted_matches = sorted([(m, n) for m, n in matches], key=lambda x: np.abs(x[0].distance - x[1].distance))
-
     flag_xy = []
     for match in [kp2[ni.trainIdx].pt for (mi, ni) in sorted_matches]:
         flag_xy.append(match)
@@ -55,45 +50,27 @@ def create_world(path):
     k = Counter(flag_xy).keys()  # counts the elements' frequency
     v = Counter(flag_xy).values()  # counts the elements' frequency
 
-
-
-    # make sure this is greater than 2 or pop missing location arbitrarily
-    # topposition = sorted(zip(v, k), reverse=True)[:2]
-    # player1, player2 = sorted(zip(v, k), reverse=True)[:2]
-    # import scipy
     from scipy import cluster
     players_pos = cluster.vq.kmeans(np.array(k, dtype=np.float), 2)
 
     x, y = players_pos[0][0]
     print 'p0 ', x,y
-    # player1 = x/4 + 256*y/4
     player1 = (int(x),int(y))
     x, y = players_pos[0][1]
     print 'p1 ', x,y
-    # player2 = x/4 + 256*y/4
     player2 = (int(x),int(y))
-    # player1 = 13587
-    # player2 = 36016
 
-    ## pixelate by 16x16
+    ## pixelate by 4x4
     pxlimg = np.zeros((4*48,4*64,3), dtype=np.uint8)
     img = img1
     pR = 4
-
     for i in range(pxlimg.shape[0]):
         for j in range(pxlimg.shape[1]):
             pxlimg[i,j] = np.mean(img[i*pR:(i+1)*pR, j*pR:(j+1)*pR].reshape(-1,3), axis=0, dtype=int)
 
+    ## get the background from thresholding
     pxlimg_grs = cv2.cvtColor(pxlimg, cv2.COLOR_RGB2GRAY)
     ret, frame = cv2.threshold(pxlimg_grs, 0,255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
-
     background_idx = np.argwhere(~frame.ravel())
-
-    # ## get the background
-    # median_pxlimg = np.median(pxlimg.reshape(-1,3), axis=0)
-    # background_idx = np.argwhere((np.linalg.norm((pxlimg.reshape(-1,3) - median_pxlimg), axis=1)) < 50)
-
-    ## tile id for non background tiles
-    wall_tileid = set(range(48*64)) - set(np.unique(background_idx))
 
     return player1, player2, background_idx, pxlimg, img1

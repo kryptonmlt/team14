@@ -11,16 +11,14 @@ UPLOAD_FOLDER = './'
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 
 app = Flask(__name__)
-
 app.secret_key = 'super secret key'
-
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 from datetime import timedelta
 from flask import make_response, request, current_app
 from functools import update_wrapper
 
-
+## make the reply cross domain
 def crossdomain(origin=None, methods=None, headers=None,
                 max_age=21600, attach_to_all=True,
                 automatic_options=True):
@@ -64,23 +62,15 @@ def crossdomain(origin=None, methods=None, headers=None,
     return decorator
 
 
-@app.route("/")
-def hello():
-    return "Hello World!"
-
-
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
-
+## POST the game image and return the players and walls locations
 @app.route('/upload', methods=['GET', 'POST'])
 @crossdomain(origin='*')
 def upload_file():
     if request.method == 'POST':
-
-        ## there should also be an request idea
-
 
         # check if the post request has the file part
         if 'file' not in request.files:
@@ -89,8 +79,6 @@ def upload_file():
 
         file = request.files['file']
 
-        # if user does not select file, browser also
-        # submit a empty part without filename
         if file.filename == '':
             print('No selected file')
             return redirect(request.url)
@@ -106,24 +94,22 @@ def upload_file():
             # picture_url = url_for('uploaded_file', filename=filename)
             picture_url = filename
 
-
-
             import json
             result = json.dumps({'p1':p1, 'p2':p2,
                                 # 'objs':','.join([str(x) for x in list(wall_tileids)]),
                                 'objs':'wall_ids.txt',
                                 'pictureUrl':picture_url}, separators=(',', ':'))
 
+            ## save the pixelated image
             import scipy
             from scipy import misc
             misc.imsave(os.path.join(app.config['UPLOAD_FOLDER'], filename), orgimg1)
 
+            ## save the walls position
             with open('./wall_ids.txt', 'w') as f:
                 d_ = ','.join([str(i) for i in wall_tileids.reshape(-1)])
-                # d_ = ','.join([str(x) for x in list(wall_tileids)])
                 f.write(d_)
 
-            # result = "player1=" + str(p1) + "&player2=" + str(p2) + "&objs=" + str(list(wall_tileid)) + "&pictureUrl=" + str(picture_url)
             return result;
 
     return 'ok'
