@@ -255,6 +255,8 @@
                     if (isStarted) {
                         game.physics.arcade.collide(player1, layer);
                         game.physics.arcade.collide(player2, layer);
+                        game.physics.arcade.collide(bullets1, layer);
+                        game.physics.arcade.collide(bullets2, layer);
                         game.physics.arcade.collide(player1, player2, hitPlayer, null, this);
                         game.physics.arcade.collide(player1, bullets2, hitPlayerWithBullet, null, this);
                         game.physics.arcade.collide(player2, bullets1, hitPlayerWithBullet, null, this);
