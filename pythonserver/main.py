@@ -106,16 +106,20 @@ def upload_file():
             # picture_url = url_for('uploaded_file', filename=filename)
             picture_url = filename
 
+
+
             import json
             result = json.dumps({'p1':int(p1), 'p2':int(p2),
-                                'objs':','.join([str(x) for x in list(wall_tileids)]),
+                                # 'objs':','.join([str(x) for x in list(wall_tileids)]),
                                 'pictureUrl':picture_url}, separators=(',', ':'))
 
             import scipy
             from scipy import misc
             misc.imsave(os.path.join(app.config['UPLOAD_FOLDER'], filename), orgimg1)
 
-
+            with open('./wall_ids.txt', 'w') as f:
+                d_ = ','.join([str(x) for x in list(wall_tileids)])
+                f.write(d_)
 
             # result = "player1=" + str(p1) + "&player2=" + str(p2) + "&objs=" + str(list(wall_tileid)) + "&pictureUrl=" + str(picture_url)
             return result;
