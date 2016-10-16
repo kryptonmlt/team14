@@ -22,9 +22,9 @@ def create_world(path):
 
     ## load the player
     player = np.zeros((64,64,3), dtype=np.uint8)
-    cv2.circle(player, (32,32), 30, (1,1,1), 3)
-    cv2.line(player, (0,0), (64,64), (1,1,1), 3)
-    cv2.line(player, (0,64), (64,0), (1,1,1), 3)
+    cv2.circle(player, (32,32), 20, (1,1,1), 3)
+    cv2.line(player, (10,10), (54,54), (1,1,1), 3)
+    cv2.line(player, (10,54), (54,10), (1,1,1), 3)
     player *= 255
 
     ## match the player locations
@@ -71,8 +71,8 @@ def create_world(path):
     print 'p1 ', x,y
     player2 = x/4 + 256*y/4
 
-    player1 = 13587
-    player2 = 36016
+    # player1 = 13587
+    # player2 = 36016
 
     ## pixelate by 16x16
     pxlimg = np.zeros((4*48,4*64,3), dtype=np.uint8)
