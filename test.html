@@ -15,8 +15,8 @@
                         processData: false,
                         async: false,
                         success: function (data) {
-                            console.log(data);
-                            window.location.href = '/game.html?' + data;
+                            var obj = JSON.parse(text);
+                            window.location.href = "/game.html?player1=" + obj.p1 + "&player2=" + obj.p2 + "&objs=" + obj.objs + "&pictureUrl=" + obj.pictureUrl;
                         },
                     });
                 });
