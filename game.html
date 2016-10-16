@@ -41,7 +41,7 @@
                 return query_string;
             }();
 
-            var showDebug = true;
+            var showDebug = false;
             $(document).ready(function () {
 
                 var player1X = parseInt(QueryString.player1.split(",")[0], 10);
@@ -49,7 +49,7 @@
 
                 var player2X = parseInt(QueryString.player2.split(",")[0], 10);
                 var player2Y = parseInt(QueryString.player2.split(",")[1], 10);
-
+                var backgroundTile = parseInt(QueryString.backgroundTile, 10);
                 var objects = QueryString.objs;
                 var pictureUrl = QueryString.pictureUrl;
 
@@ -204,6 +204,11 @@
 
                     function hitWall(bullet, tile) {
                         bullet.kill();
+                        tile.collideDown = false;
+                        tile.collideLeft = false;
+                        tile.collideRight = false;
+                        tile.collideUp = false;
+                        map.replace(tile.index, backgroundTile, tile.x, tile.y, 1, 1);
                     }
 
                     function hitPlayer(player1, player2) {
