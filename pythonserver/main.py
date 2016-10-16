@@ -98,21 +98,24 @@ def upload_file():
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
 
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            # file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
             # compute the stuff
-            p1, p2, wall_tileids, pxlimg = pictureprocess.create_world(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            p1, p2, wall_tileids, pxlimg, orgimg1 = pictureprocess.create_world(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
-            picture_url = "http://localhost:5000"+url_for('uploaded_file', filename=filename)
+            # picture_url = url_for('uploaded_file', filename=filename)
+            picture_url = filename
 
             import json
             result = json.dumps({'p1':int(p1), 'p2':int(p2),
-                                'objs':str(list(wall_tileids)),
-                                'pictureUrl':picture_url})
+                                'objs':','.join([str(x) for x in list(wall_tileids)]),
+                                'pictureUrl':picture_url}, separators=(',', ':'))
 
             import scipy
             from scipy import misc
-            misc.imsave(os.path.join(app.config['UPLOAD_FOLDER'], filename+'.png'), pxlimg)
+            misc.imsave(os.path.join(app.config['UPLOAD_FOLDER'], filename), orgimg1)
+
+
 
             # result = "player1=" + str(p1) + "&player2=" + str(p2) + "&objs=" + str(list(wall_tileid)) + "&pictureUrl=" + str(picture_url)
             return result;
@@ -121,6 +124,7 @@ def upload_file():
 
 
 @app.route('/uploads/<filename>')
+@crossdomain(origin='*')
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'],
                                filename)
