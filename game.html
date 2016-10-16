@@ -62,7 +62,7 @@
 
                 var MAX_PLAYER_HEALTH = 1;
                 var BULLET_DAMAGE = 1;
-                var tileSize = 16;
+                var tileSize = 4;
                 var mapX = 1024;
                 var mapY = 768;
                 var flagTileX = 32;
@@ -88,7 +88,7 @@
                     game.load.image('bullet1', 'assets/bullet1.png');
                     game.load.image('bullet2', 'assets/bullet2.png');
 
-                    game.load.tilemap('map', 'assets/example1.csv', null, Phaser.Tilemap.CSV);
+                    game.load.tilemap('map', 'assets/timemap_4x4.csv', null, Phaser.Tilemap.CSV);
                     // game.load.image('tiles', 'assets/example1.jpg');
                     game.load.image('tiles', "pythonserver/" + pictureUrl);
                     game.load.spritesheet('kaboom', 'assets/explosion.png', 64, 64, 23);
@@ -108,7 +108,7 @@
                     game.scale.fullScreenScaleMode = Phaser.ScaleManager.EXACT_FIT;
 
                     //tilemap
-                    map = game.add.tilemap('map', 16, 16);
+                    map = game.add.tilemap('map', tileSize, tileSize);
                     map.addTilesetImage('tiles');
                     layer = map.createLayer(0);
                     layer.resizeWorld();
