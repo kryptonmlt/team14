@@ -66,11 +66,12 @@ def create_world(path):
 
     x, y = players_pos[0][0]
     print 'p0 ', x,y
-    player1 = x/4 + 256*y/4
+    # player1 = x/4 + 256*y/4
+    player1 = (int(x),int(y))
     x, y = players_pos[0][1]
     print 'p1 ', x,y
-    player2 = x/4 + 256*y/4
-
+    # player2 = x/4 + 256*y/4
+    player2 = (int(x),int(y))
     # player1 = 13587
     # player2 = 36016
 

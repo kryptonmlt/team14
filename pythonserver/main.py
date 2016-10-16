@@ -109,7 +109,7 @@ def upload_file():
 
 
             import json
-            result = json.dumps({'p1':int(p1), 'p2':int(p2),
+            result = json.dumps({'p1':p1, 'p2':p2,
                                 # 'objs':','.join([str(x) for x in list(wall_tileids)]),
                                 'objs':'wall_ids.txt',
                                 'pictureUrl':picture_url}, separators=(',', ':'))
