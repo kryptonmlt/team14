@@ -119,7 +119,8 @@ def upload_file():
             misc.imsave(os.path.join(app.config['UPLOAD_FOLDER'], filename), orgimg1)
 
             with open('./wall_ids.txt', 'w') as f:
-                d_ = ','.join([str(x) for x in list(wall_tileids)])
+                d_ = ','.join([str(i) for i in wall_tileids.reshape(-1)])
+                # d_ = ','.join([str(x) for x in list(wall_tileids)])
                 f.write(d_)
 
             # result = "player1=" + str(p1) + "&player2=" + str(p2) + "&objs=" + str(list(wall_tileid)) + "&pictureUrl=" + str(picture_url)
