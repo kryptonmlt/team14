@@ -42,12 +42,13 @@
             }();
 
             function getXFromTile(tile) {
-                return (tile % 64) * 16;
+                return (tile % 256) * 4;
             }
 
             function getYFromTile(tile) {
-                return (tile / 64) * 16;
+                return (tile / 256) * 4;
             }
+            
             var showDebug = true;
             $(document).ready(function () {
 
@@ -73,7 +74,7 @@
                 var bulletTime1 = 0;
                 var bulletTime2 = 0;
                 var bulletPixelPerSecond = 400;
-                var bulletDelay = 500;
+                var bulletDelay = 800;
                 var bulletLifeSpan = 700;
 
                 var isStarted = false;
