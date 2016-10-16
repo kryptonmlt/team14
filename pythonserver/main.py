@@ -5,7 +5,6 @@ import os
 from flask import Flask, request, redirect, url_for, flash, send_from_directory
 from werkzeug.utils import secure_filename
 
-
 import pictureprocess
 
 UPLOAD_FOLDER = './'
@@ -16,7 +15,6 @@ app = Flask(__name__)
 app.secret_key = 'super secret key'
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
 
 from datetime import timedelta
 from flask import make_response, request, current_app
@@ -62,8 +60,8 @@ def crossdomain(origin=None, methods=None, headers=None,
 
         f.provide_automatic_options = False
         return update_wrapper(wrapped_function, f)
-    return decorator
 
+    return decorator
 
 
 @app.route("/")
@@ -98,36 +96,23 @@ def upload_file():
             return redirect(request.url)
 
         if file and allowed_file(file.filename):
-
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-
-            print '#redirect', redirect(url_for('uploaded_file', filename=filename), code=307)
-            ## compute the stuff
-            p1, p2 = pictureprocess.create_world()
-
-            print p1, p2
-
-            return redirect(url_for('uploaded_file',
-                                    filename=filename))
+            # compute the stuff
+            p1, p2, objs = pictureprocess.create_world(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            print p1, p2, url_for('uploaded_file', filename=filename)
+            picture_url = "http://localhost:5000"+url_for('uploaded_file', filename=filename)
+            result = "player1=" + str(100) + "&player2=" + str(350) + "&objs=" + objs + "&pictureUrl=" + str(picture_url)
+            return result;
 
     return 'ok'
-
-    # return '''
-    # <!doctype html>
-    # <title>Upload new File</title>
-    # <h1>Upload new File</h1>
-    # <form action="" method=post enctype=multipart/form-data>
-    #   <p><input type=file name=file>
-    #      <input type=submit value=Upload>
-    # </form>
-    # '''
 
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'],
                                filename)
+
 
 if __name__ == "__main__":
     app.run()
