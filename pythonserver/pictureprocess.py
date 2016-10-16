@@ -86,4 +86,4 @@ def create_world(path):
     ## tile id for non background tiles
     wall_tileid = set(range(48*64)) - set(np.unique(background_idx))
 
-    return player1, player2, wall_tileid, pxlimg, img1
+    return player1, player2, background_idx, pxlimg, img1
