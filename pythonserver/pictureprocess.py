@@ -28,14 +28,16 @@ def create_world(path):
     player *= 255
 
     ## match the player locations
-    player_255_uint8 = player
+    player_255_uint8 = cv2.cvtColor(player, cv2.COLOR_RGB2GRAY)
+    img_grs = cv2.cvtColor(img1, cv2.COLOR_RGB2GRAY)
+
 
     FLANN_INDEX_KDTREE = 0
     MIN_MATCH_COUNT = 5
 
     sift = cv2.SIFT()
     kp1, des1 = sift.detectAndCompute(~player_255_uint8, None)
-    kp2, des2 = sift.detectAndCompute(img1, None)
+    kp2, des2 = sift.detectAndCompute(img_grs, None)
 
     index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
     search_params = dict(checks=50)
@@ -54,8 +56,6 @@ def create_world(path):
     v = Counter(flag_xy).values()  # counts the elements' frequency
 
 
-    # p1 = 13587
-    # p2 = 36016
 
     # make sure this is greater than 2 or pop missing location arbitrarily
     # topposition = sorted(zip(v, k), reverse=True)[:2]
@@ -65,9 +65,14 @@ def create_world(path):
     players_pos = cluster.vq.kmeans(np.array(k, dtype=np.float), 2)
 
     x, y = players_pos[0][0]
+    print 'p0 ', x,y
     player1 = x/4 + 256*y/4
     x, y = players_pos[0][1]
+    print 'p1 ', x,y
     player2 = x/4 + 256*y/4
+
+    player1 = 13587
+    player2 = 36016
 
     ## pixelate by 16x16
     pxlimg = np.zeros((4*48,4*64,3), dtype=np.uint8)
