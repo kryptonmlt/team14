@@ -90,7 +90,7 @@
 
                     game.load.tilemap('map', 'assets/example1.csv', null, Phaser.Tilemap.CSV);
                     // game.load.image('tiles', 'assets/example1.jpg');
-                    game.load.image('tiles', "pythonserver/"+pictureUrl);
+                    game.load.image('tiles', "pythonserver/" + pictureUrl);
                     game.load.spritesheet('kaboom', 'assets/explosion.png', 64, 64, 23);
                     game.load.image('button', 'assets/start.png');
                     game.load.image('cover', 'assets/cover.png');
@@ -110,10 +110,13 @@
                     //tilemap
                     map = game.add.tilemap('map', 16, 16);
                     map.addTilesetImage('tiles');
-                    map.setCollision(objects, true);
                     layer = map.createLayer(0);
                     layer.resizeWorld();
-
+                    var objectsArray = objects.split(",").map(function (item) {
+                        return parseInt(item, 10);
+                    });
+                    map.setCollision(objectsArray);
+                    layer.debug = true;
                     //flags
                     flags = game.add.group();
                     flag1 = flags.create(player1X, player1Y, 'flag1', 0);
@@ -201,6 +204,10 @@
                     endScreen(player.flagMessage);
                 }
 
+                function hitWall(bullet, tile) {
+                    bullet.kill();
+                }
+
                 function hitPlayer(player1, player2) {
                     //players collided with each other
                     //do nothing
@@ -220,7 +227,7 @@
                 }
 
                 function rematchLink() {
-                    window.location.href = "/";
+                    window.location.href = "./";
                 }
 
                 function endScreen(message) {
@@ -255,8 +262,8 @@
                     if (isStarted) {
                         game.physics.arcade.collide(player1, layer);
                         game.physics.arcade.collide(player2, layer);
-                        game.physics.arcade.collide(bullets1, layer);
-                        game.physics.arcade.collide(bullets2, layer);
+                        game.physics.arcade.collide(bullets1, layer, hitWall, null, this);
+                        game.physics.arcade.collide(bullets2, layer, hitWall, null, this);
                         game.physics.arcade.collide(player1, player2, hitPlayer, null, this);
                         game.physics.arcade.collide(player1, bullets2, hitPlayerWithBullet, null, this);
                         game.physics.arcade.collide(player2, bullets1, hitPlayerWithBullet, null, this);
@@ -346,10 +353,10 @@
 
                 function render() {
 
-                    //game.debug.body(player1);
-                    //game.debug.body(player2);
-                    //game.debug.body(flag1);
-                    //game.debug.body(flag2);
+                    game.debug.body(player1);
+                    game.debug.body(player2);
+                    game.debug.body(flag1);
+                    game.debug.body(flag2);
 
                 }
             });

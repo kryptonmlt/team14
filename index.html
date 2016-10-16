@@ -17,11 +17,15 @@
                         async: false,
                         success: function (data) {
                             var obj = JSON.parse(data);
-                            window.location.href = "/game.html?player1=" + obj.p1 + "&player2=" + obj.p2 + "&objs=" + removeSpaces(obj.objs) + "&pictureUrl=" + obj.pictureUrl;
+                            window.location.href = "./game.html?player1=" + obj.p1 + "&player2=" + obj.p2 + "&objs=" + removeSpaces(obj.objs) + "&pictureUrl=" + obj.pictureUrl;
                         },
                     });
                 });
             });
+            
+            function removeSpaces(str){
+                return str.replace(/\s+/g, '');
+            }
         </script>
     </head>
     <body>
