@@ -34,7 +34,7 @@ def create_world(path):
     MIN_MATCH_COUNT = 5
 
     sift = cv2.SIFT()
-    kp1, des1 = sift.detectAndCompute(player_255_uint8, None)
+    kp1, des1 = sift.detectAndCompute(~player_255_uint8, None)
     kp2, des2 = sift.detectAndCompute(img1, None)
 
     index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
@@ -53,6 +53,9 @@ def create_world(path):
     k = Counter(flag_xy).keys()  # counts the elements' frequency
     v = Counter(flag_xy).values()  # counts the elements' frequency
 
+
+    # p1 = 13587
+    # p2 = 36016
 
     # make sure this is greater than 2 or pop missing location arbitrarily
     # topposition = sorted(zip(v, k), reverse=True)[:2]
