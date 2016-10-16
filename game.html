@@ -5,6 +5,15 @@
         <title>Draw Battle</title>
         <script src="js/phaser.min.js"></script>
         <script src="js/jquery-3.1.1.min.js"></script>
+        <style>
+            #container{
+                width:100%;
+            }
+            #game {
+                width: 50%;
+                margin: 0 auto; 
+            }
+        </style>
     </head>
     <body>
         <script type="text/javascript">
@@ -136,7 +145,7 @@
                     player2 = game.add.sprite(player2X, player2Y, 'tank2', players);
                     createPlayer(player1, "Player 2 Won!", "Player 1 Won!");
                     createPlayer(player2, "Player 1 Won!", "Player 2 Won!");
-                    
+
                     //explosion
                     explosions = game.add.group();
                     for (var i = 0; i < 10; i++) {
@@ -343,8 +352,10 @@
                 }
             });
         </script>
+        <div id="container">
+            <div id="game">
 
-        <div id="game">
+            </div>
         </div>
     </body>
 </html>
