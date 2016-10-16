@@ -52,15 +52,33 @@ def create_world(path):
     k = Counter(flag_xy).keys()  # counts the elements' frequency
     v = Counter(flag_xy).values()  # counts the elements' frequency
 
-    topposition = sorted(zip(v, k), reverse=True)[:2]
 
-    # make sure this is greater than 2
+    # make sure this is greater than 2 or pop missing location arbitrarily
+    # topposition = sorted(zip(v, k), reverse=True)[:2]
+    # player1, player2 = sorted(zip(v, k), reverse=True)[:2]
+    # import scipy
+    from scipy import cluster
+    players_pos = cluster.vq.kmeans(np.array(k, dtype=np.float), 2)
 
-    player1, player2 = sorted(zip(v, k), reverse=True)[:2]
+    x, y = players_pos[0][0]
+    player1 = x/16 + 64*y/16
+    x, y = players_pos[0][1]
+    player2 = x/16 + 64*y/16
 
+    ## pixelate by 16x16
+    pxlimg = np.zeros((48,64,3), dtype=np.uint8)
+    img = img1
+    pR = 16
 
-    ## make
-    print "p1", player1, "p2", player2
+    for i in range(pxlimg.shape[0]):
+        for j in range(pxlimg.shape[1]):
+            pxlimg[i,j] = np.mean(img[i*pR:(i+1)*pR, j*pR:(j+1)*pR].reshape(-1,3), axis=0, dtype=int)
 
+    ## get the background
+    median_pxlimg = np.median(pxlimg.reshape(-1,3), axis=0)
+    background_idx = np.argwhere((np.linalg.norm((pxlimg.reshape(-1,3) - median_pxlimg), axis=1)) < 50)
 
-    return player1, player2, ""
+    ## tile id for non background tiles
+    wall_tileid = set(range(48*64)) - set(np.unique(background_idx))
+
+    return player1, player2, wall_tileid, pxlimg
