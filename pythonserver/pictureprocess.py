@@ -15,7 +15,7 @@ def create_world(path):
     if (x > y):
         img1 = np.rollaxis(img0, 1, 0)
     else:
-        pass
+        img1 = img0
 
     ## resize to (768, 1024)
     img1 = misc.imresize(img1, (768, 1024))
