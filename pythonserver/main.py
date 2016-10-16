@@ -99,14 +99,14 @@ def upload_file():
             import json
             result = json.dumps({'p1':p1, 'p2':p2,
                                 # 'objs':','.join([str(x) for x in list(wall_tileids)]),
-                                'background_tile':background_tile,
+                                'background_tile':str(background_tile),
                                 'objs':'wall_ids.txt',
                                 'pictureUrl':picture_url}, separators=(',', ':'))
 
             ## save the pixelated image
-            import scipy
-            from scipy import misc
-            misc.imsave(os.path.join(app.config['UPLOAD_FOLDER'], filename), pxlimg)
+            # import scipy
+            # from scipy import misc
+            # misc.imsave(os.path.join(app.config['UPLOAD_FOLDER'], filename), pxlimg)
 
             ## save the walls position
             with open('./wall_ids.txt', 'w') as f:
