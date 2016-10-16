@@ -62,9 +62,9 @@ def create_world(path):
     players_pos = cluster.vq.kmeans(np.array(k, dtype=np.float), 2)
 
     x, y = players_pos[0][0]
-    player1 = x/16 + 64*y/16
+    player1 = x/4 + 256*y/4
     x, y = players_pos[0][1]
-    player2 = x/16 + 64*y/16
+    player2 = x/4 + 256*y/4
 
     ## pixelate by 16x16
     pxlimg = np.zeros((4*48,4*64,3), dtype=np.uint8)
