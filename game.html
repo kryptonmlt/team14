@@ -41,22 +41,14 @@
                 return query_string;
             }();
 
-            function getXFromTile(tile) {
-                return (tile % 256) * 4;
-            }
-
-            function getYFromTile(tile) {
-                return (tile / 256) * 4;
-            }
-            
             var showDebug = true;
             $(document).ready(function () {
 
-                var player1X = getXFromTile(QueryString.player1);
-                var player1Y = getYFromTile(QueryString.player1);
+                var player1X = parseInt(QueryString.player1.split(",")[0], 10);
+                var player1Y = parseInt(QueryString.player1.split(",")[1], 10);
 
-                var player2X = getXFromTile(QueryString.player2);
-                var player2Y = getYFromTile(QueryString.player2);
+                var player2X = parseInt(QueryString.player2.split(",")[0], 10);
+                var player2Y = parseInt(QueryString.player2.split(",")[1], 10);
 
                 var objects = QueryString.objs;
                 var pictureUrl = QueryString.pictureUrl;
