@@ -104,9 +104,9 @@ def upload_file():
                                 'pictureUrl':picture_url}, separators=(',', ':'))
 
             ## save the pixelated image
-            # import scipy
-            # from scipy import misc
-            # misc.imsave(os.path.join(app.config['UPLOAD_FOLDER'], filename), pxlimg)
+            import scipy
+            from scipy import misc
+            misc.imsave(os.path.join(app.config['UPLOAD_FOLDER'], filename), orgimg1)
 
             ## save the walls position
             with open('./wall_ids.txt', 'w') as f:
