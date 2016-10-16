@@ -77,7 +77,8 @@ def create_world(path):
 
     pxlimg_grs = cv2.cvtColor(pxlimg, cv2.COLOR_RGB2GRAY)
     ret, frame = cv2.threshold(pxlimg_grs, 0,255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
-    background_idx = np.argwhere(frame.ravel())
+
+    background_idx = np.argwhere(~frame.ravel())
 
     # ## get the background
     # median_pxlimg = np.median(pxlimg.reshape(-1,3), axis=0)
