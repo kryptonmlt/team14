@@ -48,7 +48,7 @@
             function getYFromTile(tile) {
                 return (tile / 64) * 16;
             }
-            var showDebug = false;
+            var showDebug = true;
             $(document).ready(function () {
 
                 var player1X = getXFromTile(QueryString.player1);
@@ -366,7 +366,6 @@
                         if (!showDebug)
                         {
                             game.debug.reset();
-                            layer.debug = false;
                         }
                     }
 
@@ -376,7 +375,6 @@
                             game.debug.body(player2);
                             game.debug.body(flag1);
                             game.debug.body(flag2);
-                            layer.debug = true;
                         }
                     }
                 });
